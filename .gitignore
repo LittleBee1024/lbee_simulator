@@ -38,3 +38,17 @@ build/
 *.wat
 .vscode/
 ui/wasm
+
+# simulator
+*.yo
+yas-grammar.c
+yas
+.vscode/
+*.o
+hcl_lex.c
+hcl.tab.*
+hcl2c
+hcl2v
+mux4.c
+mux4
+seq_std.c
