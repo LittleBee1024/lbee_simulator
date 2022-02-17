@@ -1,0 +1,47 @@
+body {
+   margin : 0em;
+   padding: 0em;
+}
+
+.el-header {
+   margin         : 0em;
+   padding        : 0em;
+   display        : flex;
+   align-items    : center;
+   justify-content: flex-start;
+   flex-wrap      : wrap;
+}
+
+.el-footer {
+   background-color: #ffa724;
+   display        : flex;
+   align-items    : center;
+   justify-content: flex-end;
+}
+
+.el-menu {
+   background-color: #ffa724;
+   flex            : 1;
+}
+
+.el-main {
+   text-align: center;
+   min-height: 30em;
+}
+
+.result {
+   margin-top: 2em;
+   padding-left: 1em;
+   padding-right: 1em;
+   background-color: lightgrey;
+   text-align: left;
+   overflow: auto;
+   width: auto;
+   min-height: 20em;
+   white-space: pre-line;
+}
+
+#form-button .el-form-item__content {
+   display: flex;
+   justify-content: flex-end;
+}
