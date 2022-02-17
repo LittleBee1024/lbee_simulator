@@ -12,10 +12,10 @@ serve:
 	cd ./build/html && python -m SimpleHTTPServer
 
 dump:
-	wasm2wat ./build/html/web_api.wasm -o web_api.wat
+	wasm2wat ./build/html/wasm/web_api.wasm -o web_api.wat
 
 clean:
-	@rm -rf *.wat build
+	@rm -rf build
 
 release: clean
 	emcmake cmake -S . -B build -DCMAKE_BUILD_TYPE=RELEASE

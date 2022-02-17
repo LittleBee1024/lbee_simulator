@@ -15,26 +15,13 @@
 #   endif
 #endif
 
-#include "util.h"
 #include "demo.h"
-
-EM_PORT_API(int) Hello() {
-   return LIBDEMO::hello();
-}
 
 EM_PORT_API(int) Sub(int a, int b) {
    return DEMO::sub(a, b);
 }
 
-EM_PORT_API(int) Multiply(int a, int b) {
-   return DEMO::multiply(a, b);
-}
-
-EM_PORT_API(const char*) GetString() {
-   return DEMO::get_string();
-}
-
-EM_PORT_API(int) SetString(const char* s) {
-   return DEMO::set_string(s);
+EM_PORT_API(const char*) ToUppercase(const char* in) {
+   return DEMO::toUppercase(in);
 }
 

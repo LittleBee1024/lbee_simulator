@@ -1,9 +1,40 @@
-*.wat
-*.wasm
-web_api.js
-build/
+# Prerequisites
+*.d
 
-# cpp
+# Compiled Object files
+*.slo
+*.lo
 *.o
-.vscode
+*.obj
 
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# wasm
+web_api.js
+*.wasm
+build/
+*.wat
+.vscode/
+ui/wasm

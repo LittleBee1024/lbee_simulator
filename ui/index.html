@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>Webassembly Demo</title>
+   <link rel="icon" href="images/logo.png" type="image/png">
+   <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css" />
+   <link rel="stylesheet" href="styles/index.css">
+   <script defer src="https://unpkg.com/vue@next"></script>
+   <script defer src="https://unpkg.com/element-plus"></script>
+</head>
+
+<body>
+   <div id="app">
+      <root />
+   </div>
+
+   <!-- Webassembly scripts -->
+   <script defer src="./wasm/web_api.js"></script>
+   <script defer type="module" src="index.js"></script>
+</body>
+
+</html>

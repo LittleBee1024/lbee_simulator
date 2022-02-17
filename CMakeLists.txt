@@ -13,5 +13,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # set(CMAKE_C_COMPILER "emcc")
 # set(CMAKE_CXX_COMPILER "em++")
 
-add_subdirectory(cpp)
-add_subdirectory(web)
+# Output Directory
+set(OUTUPT_DIR ${CMAKE_BINARY_DIR}/html)
+file(MAKE_DIRECTORY ${OUTUPT_DIR})
+MESSAGE(STATUS "OUTUPT_DIR = ${OUTUPT_DIR}")
+
+add_subdirectory(ui)
+add_subdirectory(wasm)
