@@ -529,10 +529,4 @@ namespace LBEE_YAS
       print_code(outfile, savebytepos);
       start_line();
    }
-
-   uint64_t atollh(const char *p)
-   {
-      return strtoull(p, nullptr, 16);
-   }
-
 }

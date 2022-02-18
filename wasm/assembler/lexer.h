@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -38,6 +39,4 @@ namespace LBEE_YAS
    void add_ident(char *);
    void fail(const char *);
    void finish_line();
-
-   uint64_t atollh(const char *);
 }

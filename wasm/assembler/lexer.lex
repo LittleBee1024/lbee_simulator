@@ -34,7 +34,7 @@ Reg           %rax|%rcx|%rdx|%rbx|%rsi|%rdi|%rsp|%rbp|%r8|%r9|%r10|%r11|%r12|%r1
 {Instr}                         LBEE_YAS::add_instr(yytext);
 {Reg}                           LBEE_YAS::add_reg(yytext);
 [-]?{Digit}+                    LBEE_YAS::add_num(atoll(yytext));
-"0"[xX]{Hex}+                   LBEE_YAS::add_num(LBEE_YAS::atollh(yytext));
+"0"[xX]{Hex}+                   LBEE_YAS::add_num(strtoull(yytext, nullptr, 16));
 [():,]                          LBEE_YAS::add_punct(*yytext);
 {Ident}                         LBEE_YAS::add_ident(yytext);
 {Char}                          {; BEGIN ERR;}
