@@ -34,9 +34,3 @@ private:
    int m_pass;
 };
 
-/***************************************
- * Variables and functions from flex
- ***************************************/
-extern FILE *yasin;
-extern int yaslineno;
-extern int yaslex(YasLexer *);

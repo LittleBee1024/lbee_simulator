@@ -6,6 +6,13 @@
 #include <string.h>
 #include <stdexcept>
 
+/***************************************
+ * Variables and functions from flex
+ ***************************************/
+extern FILE *yasin;
+extern int yaslineno;
+extern int yaslex(YasLexer *);
+
 namespace
 {
 #define STRMAX 4096
