@@ -15,6 +15,16 @@ public:
    void parse(const char *outFilename);
    std::string parse();
 
+public:
+   void save_line(char *);
+   void add_instr(char *);
+   void add_reg(char *);
+   void add_num(int64_t);
+   void add_punct(char);
+   void add_ident(char *);
+   void error(const char *);
+   void finish_line();
+
 private:
    void resetYasIn();
 
@@ -30,19 +40,3 @@ private:
 extern FILE *yasin;
 extern int yaslineno;
 extern int yaslex(YasLexer *);
-
-/***************************************
- * User define functions used in *.lex
- ***************************************/
-
-namespace LBEE_YAS
-{
-   void save_line(char *);
-   void add_instr(char *);
-   void add_reg(char *);
-   void add_num(int64_t);
-   void add_punct(char);
-   void add_ident(char *);
-   void fail(const char *);
-   void finish_line();
-}

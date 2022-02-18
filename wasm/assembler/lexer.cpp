@@ -73,6 +73,18 @@ namespace
       int pos;
    } symbol_table[STAB];
 
+   void fail(const char *message)
+   {
+      if (!error_mode)
+      {
+         fprintf(stderr, "Error on line %d: %s\n", yaslineno, message);
+         fprintf(stderr, "Line %d, Byte 0x%.4x: %s\n",
+                 yaslineno, bytepos, input_line);
+      }
+      error_mode = 1;
+      hit_error = 1;
+   }
+
    void start_line()
    {
       int t;
@@ -92,7 +104,7 @@ namespace
          start_line();
       if (tpos >= TOK_PER_LINE - 1)
       {
-         LBEE_YAS::fail("Line too long");
+         fail("Line too long");
          return;
       }
       if (s)
@@ -100,7 +112,7 @@ namespace
          int len = strlen(s) + 1;
          if (strpos + len > STRMAX)
          {
-            LBEE_YAS::fail("Line too long");
+            fail("Line too long");
             return;
          }
          snprintf(strbuf + strpos, len, "%s", s);
@@ -142,7 +154,7 @@ namespace
       for (i = 0; i < symbol_cnt; i++)
          if (strcmp(name, symbol_table[i].name) == 0)
             return symbol_table[i].pos;
-      LBEE_YAS::fail("Can't find label");
+      fail("Can't find label");
       return -1;
    }
 
@@ -154,7 +166,7 @@ namespace
       char c;
       if (tokens[tpos].type != TOK_REG)
       {
-         LBEE_YAS::fail("Expecting Register ID");
+         fail("Expecting Register ID");
          return;
       }
       else
@@ -208,12 +220,12 @@ namespace
                rval = find_register(tokens[tpos++].sval);
             else
             {
-               LBEE_YAS::fail("Expecting Register Id");
+               fail("Expecting Register Id");
                return;
             }
             if (tokens[tpos].type != TOK_PUNCT || tokens[tpos++].cval != ')')
             {
-               LBEE_YAS::fail("Expecting ')'");
+               fail("Expecting ')'");
                return;
             }
          }
@@ -240,7 +252,7 @@ namespace
       }
       else
       {
-         LBEE_YAS::fail("Number Expected");
+         fail("Number Expected");
          return;
       }
       val -= offset;
@@ -264,7 +276,7 @@ namespace
             int i;
             if (pos > 0xFFFF)
             {
-               LBEE_YAS::fail("Code address limit exceeded");
+               fail("Code address limit exceeded");
                exit(1);
             }
             snprintf(outstring, sizeof(outstring), "0x0000:                      | ");
@@ -282,7 +294,7 @@ namespace
             int i;
             if (pos > 0xFFF)
             {
-               LBEE_YAS::fail("Code address limit exceeded");
+               fail("Code address limit exceeded");
                exit(1);
             }
             snprintf(outstring, sizeof(outstring), "0x000:                      | ");
@@ -304,9 +316,9 @@ namespace
                if (block_factor)
                {
                   fprintf(out, "    bank%d[%d] = 8\'h%.2x;\n",
-                     (pos + i) % block_factor,
-                     (pos + i) / block_factor,
-                     code[i] & 0xFF);
+                          (pos + i) % block_factor,
+                          (pos + i) / block_factor,
+                          code[i] & 0xFF);
                }
                else
                {
@@ -322,220 +334,9 @@ namespace
    }
 }
 
-namespace LBEE_YAS
-{
-
-
-   void save_line(char *s)
-   {
-      int len = strlen(s); // without copying the newline character
-      int i;
-      if (len >= STRMAX)
-         fail("Input Line too long");
-      snprintf(input_line, len, "%s", s);
-      for (i = len - 1; input_line[i] == '\n' || input_line[i] == '\r'; i--)
-         input_line[i] = '\0'; /* Remove terminator */
-   }
-
-   void add_instr(char *s)
-   {
-      add_token(TOK_INSTR, s, 0, ' ');
-   }
-
-   void add_reg(char *s)
-   {
-      add_token(TOK_REG, s, 0, ' ');
-   }
-
-   void add_num(int64_t i)
-   {
-      add_token(TOK_NUM, NULL, i, ' ');
-   }
-
-   void add_punct(char c)
-   {
-      add_token(TOK_PUNCT, NULL, 0, c);
-   }
-
-   void add_ident(char *s)
-   {
-      add_token(TOK_IDENT, s, 0, ' ');
-   }
-
-   void fail(const char *message)
-   {
-      if (!error_mode)
-      {
-         fprintf(stderr, "Error on line %d: %s\n", yaslineno, message);
-         fprintf(stderr, "Line %d, Byte 0x%.4x: %s\n",
-                 yaslineno, bytepos, input_line);
-      }
-      error_mode = 1;
-      hit_error = 1;
-   }
-
-   void finish_line()
-   {
-      int size;
-      instr_ptr instr;
-      int savebytepos = bytepos;
-      tpos = 0;
-      codepos = 0;
-      if (tcount == 0)
-      {
-         if (pass > 1)
-            print_code(outfile, savebytepos);
-         start_line();
-         return; /* Empty line */
-      }
-      /* Completion of an erroneous line */
-      if (error_mode)
-      {
-         start_line();
-         return;
-      }
-
-      /* See if this is a labeled line */
-      if (tokens[0].type == TOK_IDENT)
-      {
-         if (tokens[1].type != TOK_PUNCT || tokens[1].cval != ':')
-         {
-            fail("Missing Colon");
-            start_line();
-            return;
-         }
-         else
-         {
-            if (pass == 1)
-               add_symbol(tokens[0].sval, bytepos);
-            tpos += 2;
-            if (tcount == 2)
-            {
-               /* That's all for this line */
-               if (pass > 1)
-                  print_code(outfile, savebytepos);
-               start_line();
-               return;
-            }
-         }
-      }
-      /* Get instruction */
-      if (tokens[tpos].type != TOK_INSTR)
-      {
-         fail("Bad Instruction");
-         start_line();
-         return;
-      }
-      /* Process .pos */
-      if (strcmp(tokens[tpos].sval, ".pos") == 0)
-      {
-         if (tokens[++tpos].type != TOK_NUM)
-         {
-            fail("Invalid Address");
-            start_line();
-            return;
-         }
-         bytepos = tokens[tpos].ival;
-         if (pass > 1)
-         {
-            print_code(outfile, bytepos);
-         }
-         start_line();
-         return;
-      }
-      /* Process .align */
-      if (strcmp(tokens[tpos].sval, ".align") == 0)
-      {
-         int a;
-         if (tokens[++tpos].type != TOK_NUM || (a = tokens[tpos].ival) <= 0)
-         {
-            fail("Invalid Alignment");
-            start_line();
-            return;
-         }
-         bytepos = ((bytepos + a - 1) / a) * a;
-
-         if (pass > 1)
-         {
-            print_code(outfile, bytepos);
-         }
-         start_line();
-         return;
-      }
-      /* Get instruction size */
-      instr = find_instr(tokens[tpos++].sval);
-      if (instr == NULL)
-      {
-         fail("Invalid Instruction");
-         instr = bad_instr();
-      }
-      size = instr->bytes;
-      bytepos += size;
-      bcount = size;
-
-      /* If this is pass 1, then we're done */
-      if (pass == 1)
-      {
-         start_line();
-         return;
-      }
-
-      /* Here's where we really process the instructions */
-      code[0] = instr->code;
-      code[1] = HPACK(REG_NONE, REG_NONE);
-      switch (instr->arg1)
-      {
-      case R_ARG:
-         get_reg(instr->arg1pos, instr->arg1hi);
-         break;
-      case M_ARG:
-         get_mem(instr->arg1pos);
-         break;
-      case I_ARG:
-         get_num(instr->arg1pos, instr->arg1hi, 0);
-         break;
-      case NO_ARG:
-      default:
-         break;
-      }
-      if (instr->arg2 != NO_ARG)
-      {
-         /* Get comma  */
-         if (tokens[tpos].type != TOK_PUNCT || tokens[tpos].cval != ',')
-         {
-            fail("Expecting Comma");
-            start_line();
-            return;
-         }
-         tpos++;
-
-         /* Get second argument */
-         switch (instr->arg2)
-         {
-         case R_ARG:
-            get_reg(instr->arg2pos, instr->arg2hi);
-            break;
-         case M_ARG:
-            get_mem(instr->arg2pos);
-            break;
-         case I_ARG:
-            get_num(instr->arg2pos, instr->arg2hi, 0);
-            break;
-         case NO_ARG:
-         default:
-            break;
-         }
-      }
-
-      print_code(outfile, savebytepos);
-      start_line();
-   }
-}
-
-YasLexer::YasLexer(const char *inFilename):
-   m_in(nullptr),
-   m_out(nullptr),
-   m_pass(0)
+YasLexer::YasLexer(const char *inFilename) : m_in(nullptr),
+                                             m_out(nullptr),
+                                             m_pass(0)
 {
    m_in = fopen(inFilename, "r");
    if (!m_in)
@@ -557,7 +358,7 @@ void YasLexer::parse(const char *outFilename)
    {
       throw std::runtime_error("Can't open output file " + std::string(outFilename));
    }
-   // TODO: replace LBEE_YAS::outfile with std::ostream
+   // TODO: replace outfile with std::ostream
    outfile = m_out;
 
    m_pass = 1;
@@ -589,4 +390,202 @@ std::string YasLexer::parse()
 void YasLexer::resetYasIn()
 {
    fseek(m_in, 0, SEEK_SET);
+}
+
+void YasLexer::save_line(char *s)
+{
+   int len = strlen(s); // without copying the newline character
+   int i;
+   if (len >= STRMAX)
+      fail("Input Line too long");
+   snprintf(input_line, len, "%s", s);
+   for (i = len - 1; input_line[i] == '\n' || input_line[i] == '\r'; i--)
+      input_line[i] = '\0'; /* Remove terminator */
+}
+
+void YasLexer::add_instr(char *s)
+{
+   add_token(TOK_INSTR, s, 0, ' ');
+}
+
+void YasLexer::add_reg(char *s)
+{
+   add_token(TOK_REG, s, 0, ' ');
+}
+
+void YasLexer::add_num(int64_t i)
+{
+   add_token(TOK_NUM, NULL, i, ' ');
+}
+
+void YasLexer::add_punct(char c)
+{
+   add_token(TOK_PUNCT, NULL, 0, c);
+}
+
+void YasLexer::add_ident(char *s)
+{
+   add_token(TOK_IDENT, s, 0, ' ');
+}
+
+void YasLexer::error(const char *message)
+{
+   fail(message);
+}
+
+void YasLexer::finish_line()
+{
+   int size;
+   instr_ptr instr;
+   int savebytepos = bytepos;
+   tpos = 0;
+   codepos = 0;
+   if (tcount == 0)
+   {
+      if (pass > 1)
+         print_code(outfile, savebytepos);
+      start_line();
+      return; /* Empty line */
+   }
+   /* Completion of an erroneous line */
+   if (error_mode)
+   {
+      start_line();
+      return;
+   }
+
+   /* See if this is a labeled line */
+   if (tokens[0].type == TOK_IDENT)
+   {
+      if (tokens[1].type != TOK_PUNCT || tokens[1].cval != ':')
+      {
+         fail("Missing Colon");
+         start_line();
+         return;
+      }
+      else
+      {
+         if (pass == 1)
+            add_symbol(tokens[0].sval, bytepos);
+         tpos += 2;
+         if (tcount == 2)
+         {
+            /* That's all for this line */
+            if (pass > 1)
+               print_code(outfile, savebytepos);
+            start_line();
+            return;
+         }
+      }
+   }
+   /* Get instruction */
+   if (tokens[tpos].type != TOK_INSTR)
+   {
+      fail("Bad Instruction");
+      start_line();
+      return;
+   }
+   /* Process .pos */
+   if (strcmp(tokens[tpos].sval, ".pos") == 0)
+   {
+      if (tokens[++tpos].type != TOK_NUM)
+      {
+         fail("Invalid Address");
+         start_line();
+         return;
+      }
+      bytepos = tokens[tpos].ival;
+      if (pass > 1)
+      {
+         print_code(outfile, bytepos);
+      }
+      start_line();
+      return;
+   }
+   /* Process .align */
+   if (strcmp(tokens[tpos].sval, ".align") == 0)
+   {
+      int a;
+      if (tokens[++tpos].type != TOK_NUM || (a = tokens[tpos].ival) <= 0)
+      {
+         fail("Invalid Alignment");
+         start_line();
+         return;
+      }
+      bytepos = ((bytepos + a - 1) / a) * a;
+
+      if (pass > 1)
+      {
+         print_code(outfile, bytepos);
+      }
+      start_line();
+      return;
+   }
+   /* Get instruction size */
+   instr = find_instr(tokens[tpos++].sval);
+   if (instr == NULL)
+   {
+      fail("Invalid Instruction");
+      instr = bad_instr();
+   }
+   size = instr->bytes;
+   bytepos += size;
+   bcount = size;
+
+   /* If this is pass 1, then we're done */
+   if (pass == 1)
+   {
+      start_line();
+      return;
+   }
+
+   /* Here's where we really process the instructions */
+   code[0] = instr->code;
+   code[1] = HPACK(REG_NONE, REG_NONE);
+   switch (instr->arg1)
+   {
+   case R_ARG:
+      get_reg(instr->arg1pos, instr->arg1hi);
+      break;
+   case M_ARG:
+      get_mem(instr->arg1pos);
+      break;
+   case I_ARG:
+      get_num(instr->arg1pos, instr->arg1hi, 0);
+      break;
+   case NO_ARG:
+   default:
+      break;
+   }
+   if (instr->arg2 != NO_ARG)
+   {
+      /* Get comma  */
+      if (tokens[tpos].type != TOK_PUNCT || tokens[tpos].cval != ',')
+      {
+         fail("Expecting Comma");
+         start_line();
+         return;
+      }
+      tpos++;
+
+      /* Get second argument */
+      switch (instr->arg2)
+      {
+      case R_ARG:
+         get_reg(instr->arg2pos, instr->arg2hi);
+         break;
+      case M_ARG:
+         get_mem(instr->arg2pos);
+         break;
+      case I_ARG:
+         get_num(instr->arg2pos, instr->arg2hi, 0);
+         break;
+      case NO_ARG:
+      default:
+         break;
+      }
+   }
+
+   print_code(outfile, savebytepos);
+   start_line();
 }
