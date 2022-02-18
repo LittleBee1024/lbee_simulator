@@ -11,6 +11,8 @@
        Expanded RRMOVL to include conditional moves
 */
 
+#include <stdio.h>
+
 /**************** Registers *************************/
 
 /* REG_NONE is a special one to indicate no register */

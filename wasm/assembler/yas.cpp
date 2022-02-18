@@ -593,7 +593,7 @@ int yywrap()
     return 1;
 }
 
-extern FILE *yyin;
+extern FILE *yasin;
 
 static void usage(char *pname)
 {
@@ -648,8 +648,8 @@ int main(int argc, char *argv[])
     strncpy(infname, argv[nextarg], rootlen);
     strcpy(infname + rootlen, ".ys");
 
-    yyin = fopen(infname, "r");
-    if (!yyin)
+    yasin = fopen(infname, "r");
+    if (!yasin)
     {
         fprintf(stderr, "Can't open input file '%s'\n", infname);
         exit(1);
@@ -673,8 +673,8 @@ int main(int argc, char *argv[])
 
     pass = 1;
 
-    yylex();
-    fclose(yyin);
+    yaslex();
+    fclose(yasin);
 
     if (hit_error)
         exit(1);
@@ -683,15 +683,15 @@ int main(int argc, char *argv[])
     lineno = 1;
     error_mode = 0;
     bytepos = 0;
-    yyin = fopen(infname, "r");
-    if (!yyin)
+    yasin = fopen(infname, "r");
+    if (!yasin)
     {
         fprintf(stderr, "Can't open input file '%s'\n", infname);
         exit(1);
     }
 
-    yylex();
-    fclose(yyin);
+    yaslex();
+    fclose(yasin);
     fclose(outfile);
     return hit_error;
 }

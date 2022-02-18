@@ -41,7 +41,8 @@ ui/wasm
 
 # simulator
 *.yo
-yas-grammar.c
+*_gen.c
+*_gen.cpp
 yas
 .vscode/
 *.o

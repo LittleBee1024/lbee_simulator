@@ -3,26 +3,26 @@ CFLAGS=-Wall -O1 -g
 # http://dinosaur.compilertools.net/flex/manpage.html
 LEX=flex
 
-LEX_TARGET=yas-grammar
-ASSEMBLER=yas
+LEX_GEN=lexer_gen.cpp
+TARGET=yas
 
-SRCS := yas.c isa.c
-OBJS := $(LEX_TARGET).o $(SRCS:.c=.o)
+SRCS := yas.cpp isa.cpp lexer.cpp main.cpp
+OBJS := $(LEX_GEN:.cpp=.o) $(SRCS:.cpp=.o)
 
-all: $(ASSEMBLER)
+all: $(TARGET)
 
-$(LEX_TARGET).c: $(LEX_TARGET).lex
-	$(LEX) -o $@ $<
+$(LEX_GEN): lexer.lex
+	$(LEX) -P yas -o $@ $<
 
-%.o: %.c
+%.o: %.cpp
 	$(CC) $(CFLAGS) -c $<
 
-$(ASSEMBLER): $(OBJS)
+$(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) $^ -o $@
 
 run:
-	./$(ASSEMBLER) code.ys
+	./$(TARGET) code.ys
 	cat code.yo
 
 clean:
-	rm -rf $(ASSEMBLER) $(LEX_TARGET).c *.o *.yo
+	rm -rf $(TARGET) $(LEX_GEN) *.o *.yo
