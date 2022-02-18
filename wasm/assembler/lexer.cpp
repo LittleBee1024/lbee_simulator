@@ -55,6 +55,16 @@ namespace
    int codepos = 0; /* Current position in byte encoding */
    int bcount = 0;  /* Length of current instruction */
 
+   // Generate initialized memory for Verilog?
+   int vcode = 0;
+   // Am I in pass 1 or 2
+   int pass = 1;
+   //Should it generate code for banked memory?
+   int block_factor = 0;
+   FILE *outfile;
+   // Have I hit any errors
+   int hit_error = 0;
+
    // Symbol table
    int symbol_cnt = INIT_CNT;
    struct
@@ -283,7 +293,7 @@ namespace
          else
             snprintf(outstring, sizeof(outstring), "                            | ");
       }
-      if (LBEE_YAS::vcode)
+      if (vcode)
       {
          fprintf(out, "//%s%s\n", outstring, input_line);
          if (tcount)
@@ -291,11 +301,11 @@ namespace
             int i;
             for (i = 0; tcount && i < bcount; i++)
             {
-               if (LBEE_YAS::block_factor)
+               if (block_factor)
                {
                   fprintf(out, "    bank%d[%d] = 8\'h%.2x;\n",
-                     (pos + i) % LBEE_YAS::block_factor,
-                     (pos + i) / LBEE_YAS::block_factor,
+                     (pos + i) % block_factor,
+                     (pos + i) / block_factor,
                      code[i] & 0xFF);
                }
                else
@@ -314,15 +324,7 @@ namespace
 
 namespace LBEE_YAS
 {
-   // Am I in pass 1 or 2
-   int pass = 1;
-   // Generate initialized memory for Verilog?
-   int vcode = 0;
-   //Should it generate code for banked memory?
-   int block_factor = 0;
-   FILE *outfile;
-   // Have I hit any errors
-   int hit_error = 0;
+
 
    void save_line(char *s)
    {
@@ -555,18 +557,18 @@ void YasLexer::parse(const char *outFilename)
    {
       throw std::runtime_error("Can't open output file " + std::string(outFilename));
    }
-   // TODO: replace LBEE_YAS::outfile with std::stringstream
-   LBEE_YAS::outfile = m_out;
+   // TODO: replace LBEE_YAS::outfile with std::ostream
+   outfile = m_out;
 
    m_pass = 1;
-   // TODO: remove LBEE_YAS::pass
-   LBEE_YAS::pass = m_pass;
+   // TODO: remove pass
+   pass = m_pass;
    resetYasIn();
    yaslex(this);
 
    m_pass = 2;
-   // TODO: remove LBEE_YAS::pass
-   LBEE_YAS::pass = m_pass;
+   // TODO: remove pass
+   pass = m_pass;
    resetYasIn();
    yaslex(this);
 }

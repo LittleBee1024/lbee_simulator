@@ -37,13 +37,6 @@ extern int yaslex(YasLexer *);
 
 namespace LBEE_YAS
 {
-   extern int lineno;
-   extern int pass;
-   extern int vcode;
-   extern int block_factor;
-   extern FILE *outfile;
-   extern int hit_error;
-
    void save_line(char *);
    void add_instr(char *);
    void add_reg(char *);
