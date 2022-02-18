@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <string>
 
 static void usage(char *pname)
 {
@@ -16,8 +17,8 @@ extern FILE *yasin;
 int main_func(int argc, char *argv[])
 {
    int rootlen;
-   char infname[512];
-   char outfname[512];
+   std::string infname;
+   std::string outfname;
    int nextarg = 1;
    if (argc < 2)
       usage(argv[0]);
@@ -54,13 +55,12 @@ int main_func(int argc, char *argv[])
       fprintf(stderr, "File name too long\n");
       exit(1);
    }
-   strncpy(infname, argv[nextarg], rootlen);
-   strcpy(infname + rootlen, ".ys");
+   infname = argv[nextarg];
 
-   yasin = fopen(infname, "r");
+   yasin = fopen(infname.c_str(), "r");
    if (!yasin)
    {
-      fprintf(stderr, "Can't open input file '%s'\n", infname);
+      fprintf(stderr, "Can't open input file '%s'\n", infname.c_str());
       exit(1);
    }
 
@@ -70,12 +70,11 @@ int main_func(int argc, char *argv[])
    }
    else
    {
-      strncpy(outfname, argv[nextarg], rootlen);
-      strcpy(outfname + rootlen, ".yo");
-      LBEE_YAS::outfile = fopen(outfname, "w");
+      outfname = infname.substr(0, infname.find_last_of('.')) + ".yo";
+      LBEE_YAS::outfile = fopen(outfname.c_str(), "w");
       if (!LBEE_YAS::outfile)
       {
-         fprintf(stderr, "Can't open output file '%s'\n", outfname);
+         fprintf(stderr, "Can't open output file '%s'\n", outfname.c_str());
          exit(1);
       }
    }
@@ -90,10 +89,10 @@ int main_func(int argc, char *argv[])
 
    LBEE_YAS::pass = 2;
    LBEE_YAS::lineno = 1;
-   yasin = fopen(infname, "r");
+   yasin = fopen(infname.c_str(), "r");
    if (!yasin)
    {
-      fprintf(stderr, "Can't open input file '%s'\n", infname);
+      fprintf(stderr, "Can't open input file '%s'\n", infname.c_str());
       exit(1);
    }
 
