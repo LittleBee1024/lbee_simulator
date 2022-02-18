@@ -1,11 +1,9 @@
 #include "lexer.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <string>
 #include <exception>
 #include <iostream>
+#include <stdio.h>
+#include <string>
 
 static void usage(char *pname)
 {
@@ -13,35 +11,25 @@ static void usage(char *pname)
    exit(0);
 }
 
-static bool endsWith(const std::string& str, const std::string& suffix)
+static bool endsWith(const std::string &str, const std::string &suffix)
 {
    return str.size() >= suffix.size() &&
-      0 == str.compare(str.size()-suffix.size(), suffix.size(), suffix);
+          0 == str.compare(str.size() - suffix.size(), suffix.size(), suffix);
 }
 
-int mainImpl(int argc, char *argv[])
+static int parseFromFile(const char *infname, const char *outfname)
 {
-   std::string infname;
-   std::string outfname;
-   if (argc < 2)
-      usage(argv[0]);
-
-   infname = argv[1];
-   if (!endsWith(infname, ".ys"))
-      usage(argv[0]);
-
-   outfname = infname.substr(0, infname.find_last_of('.')) + ".yo";
-
-   try{
-      YasLexer l(infname.c_str());
-      l.parse(outfname.c_str());
+   try
+   {
+      YasLexer l(infname);
+      l.parse(outfname);
    }
-   catch(std::exception &e)
+   catch (const std::exception &e)
    {
       std::cerr << e.what() << std::endl;
       return -1;
    }
-   catch(...)
+   catch (...)
    {
       std::cerr << "Unknow error happens" << std::endl;
       return -1;
@@ -52,5 +40,14 @@ int mainImpl(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-   return mainImpl(argc, argv);
+   if (argc < 2)
+      usage(argv[0]);
+
+   std::string infname = argv[1];
+   if (!endsWith(infname, ".ys"))
+      usage(argv[0]);
+
+   std::string outfname = infname.substr(0, infname.find_last_of('.')) + ".yo";
+
+   return parseFromFile(infname.c_str(), outfname.c_str());
 }
