@@ -9,7 +9,7 @@
  ***************************************/
 extern FILE *yasin;
 extern int yaslineno;
-int yaslex();
+extern int yaslex();
 
 
 /***************************************
