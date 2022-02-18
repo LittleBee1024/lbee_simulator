@@ -51,19 +51,11 @@ int mainImpl(int argc, char *argv[])
 
    LBEE_YAS::pass = 1;
    yaslex();
-   fclose(yasin);
-
    if (LBEE_YAS::hit_error)
       exit(1);
 
-   yasin = fopen(infname.c_str(), "r");
-   if (!yasin)
-   {
-      fprintf(stderr, "Can't open input file '%s'\n", infname.c_str());
-      exit(1);
-   }
-
    LBEE_YAS::pass = 2;
+   fseek(yasin, 0, SEEK_SET);
    yaslex();
    fclose(yasin);
    fclose(LBEE_YAS::outfile);
