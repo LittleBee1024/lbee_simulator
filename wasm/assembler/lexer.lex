@@ -24,10 +24,10 @@ Reg           %rax|%rcx|%rdx|%rbx|%rsi|%rdi|%rsp|%rbp|%r8|%r9|%r10|%r11|%r12|%r1
 %%
 
 ^{Char}*{Return}*{Newline}      {LBEE_YAS::save_line(yytext); REJECT;} /* Snarf input line */
-#{Char}*{Return}*{Newline}      {LBEE_YAS::finish_line(); LBEE_YAS::lineno++;}
-"//"{Char}*{Return}*{Newline}   {LBEE_YAS::finish_line(); LBEE_YAS::lineno++;}
-"/*"{Char}*{Return}*{Newline}   {LBEE_YAS::finish_line(); LBEE_YAS::lineno++;}
-{Blank}*{Return}*{Newline}      {LBEE_YAS::finish_line(); LBEE_YAS::lineno++;}
+#{Char}*{Return}*{Newline}      {LBEE_YAS::finish_line();}
+"//"{Char}*{Return}*{Newline}   {LBEE_YAS::finish_line();}
+"/*"{Char}*{Return}*{Newline}   {LBEE_YAS::finish_line();}
+{Blank}*{Return}*{Newline}      {LBEE_YAS::finish_line();}
 
 {Blank}+                        ;
 "$"+                            ;
@@ -38,5 +38,5 @@ Reg           %rax|%rcx|%rdx|%rbx|%rsi|%rdi|%rsp|%rbp|%r8|%r9|%r10|%r11|%r12|%r1
 [():,]                          LBEE_YAS::add_punct(*yytext);
 {Ident}                         LBEE_YAS::add_ident(yytext);
 {Char}                          {; BEGIN ERR;}
-<ERR>{Char}*{Newline}           {LBEE_YAS::fail("Invalid line"); LBEE_YAS::lineno++; BEGIN 0;}
+<ERR>{Char}*{Newline}           {LBEE_YAS::fail("Invalid line"); BEGIN 0;}
 %%

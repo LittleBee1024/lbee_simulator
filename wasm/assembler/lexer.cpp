@@ -313,8 +313,6 @@ namespace
 
 namespace LBEE_YAS
 {
-   // Line number of input file
-   int lineno = 1;
    // Am I in pass 1 or 2
    int pass = 1;
    // Generate initialized memory for Verilog?
@@ -365,9 +363,9 @@ namespace LBEE_YAS
    {
       if (!error_mode)
       {
-         fprintf(stderr, "Error on line %d: %s\n", lineno, message);
+         fprintf(stderr, "Error on line %d: %s\n", yaslineno, message);
          fprintf(stderr, "Line %d, Byte 0x%.4x: %s\n",
-                 lineno, bytepos, input_line);
+                 yaslineno, bytepos, input_line);
       }
       error_mode = 1;
       hit_error = 1;

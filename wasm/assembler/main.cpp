@@ -7,16 +7,18 @@
 
 static void usage(char *pname)
 {
-   printf("Usage: %s [-V[n] -v] file.ys\n", pname);
-   printf("   -V[n]  Generate memory initialization in Verilog format (n-way blocking)\n");
-   printf("   -v  Enable verbose\n");
+   printf("Usage: %s file.ys\n", pname);
    exit(0);
 }
 
-extern FILE *yasin;
+static bool endsWith(const std::string& str, const std::string& suffix)
+{
+   return str.size() >= suffix.size() &&
+      0 == str.compare(str.size()-suffix.size(), suffix.size(), suffix);
+}
+
 int main_func(int argc, char *argv[])
 {
-   int rootlen;
    std::string infname;
    std::string outfname;
    int nextarg = 1;
@@ -47,15 +49,15 @@ int main_func(int argc, char *argv[])
          usage(argv[0]);
       }
    }
-   rootlen = strlen(argv[nextarg]) - 3;
-   if (strcmp(argv[nextarg] + rootlen, ".ys"))
+   infname = argv[nextarg];
+   if (!endsWith(infname, ".ys"))
       usage(argv[0]);
-   if (rootlen > 500)
+
+   if (infname.size() > 500)
    {
       fprintf(stderr, "File name too long\n");
       exit(1);
    }
-   infname = argv[nextarg];
 
    yasin = fopen(infname.c_str(), "r");
    if (!yasin)
@@ -88,7 +90,6 @@ int main_func(int argc, char *argv[])
       exit(1);
 
    LBEE_YAS::pass = 2;
-   LBEE_YAS::lineno = 1;
    yasin = fopen(infname.c_str(), "r");
    if (!yasin)
    {
