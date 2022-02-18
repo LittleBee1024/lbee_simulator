@@ -524,4 +524,10 @@ namespace LBEE_YAS
       print_code(outfile, savebytepos);
       start_line();
    }
+
+   unsigned long long atollh(const char *p)
+   {
+      return strtoull(p, (char **)NULL, 16);
+   }
+
 }

@@ -39,4 +39,5 @@ namespace LBEE_YAS
    void fail(const char *);
    void finish_line();
 
+   unsigned long long atollh(const char *);
 }

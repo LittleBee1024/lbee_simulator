@@ -1,6 +1,6 @@
 /* Grammar for Y86-64 Assembler */
 %{
-#include "yas.h"
+#include "lexer.h"
 #define YY_DECL int yaslex()
 %}
 
@@ -23,20 +23,20 @@ Reg           %rax|%rcx|%rdx|%rbx|%rsi|%rdi|%rsp|%rbp|%r8|%r9|%r10|%r11|%r12|%r1
 %x ERR
 %%
 
-^{Char}*{Return}*{Newline}      {save_line(yytext); REJECT;} /* Snarf input line */
-#{Char}*{Return}*{Newline}      {finish_line(); lineno++;}
-"//"{Char}*{Return}*{Newline}   {finish_line(); lineno++;}
-"/*"{Char}*{Return}*{Newline}   {finish_line(); lineno++;}
-{Blank}*{Return}*{Newline}      {finish_line(); lineno++;}
+^{Char}*{Return}*{Newline}      {LBEE_YAS::save_line(yytext); REJECT;} /* Snarf input line */
+#{Char}*{Return}*{Newline}      {LBEE_YAS::finish_line(); LBEE_YAS::lineno++;}
+"//"{Char}*{Return}*{Newline}   {LBEE_YAS::finish_line(); LBEE_YAS::lineno++;}
+"/*"{Char}*{Return}*{Newline}   {LBEE_YAS::finish_line(); LBEE_YAS::lineno++;}
+{Blank}*{Return}*{Newline}      {LBEE_YAS::finish_line(); LBEE_YAS::lineno++;}
 
 {Blank}+                        ;
 "$"+                            ;
-{Instr}                         add_instr(yytext);
-{Reg}                           add_reg(yytext);
-[-]?{Digit}+                    add_num(atoll(yytext));
-"0"[xX]{Hex}+                   add_num(atollh(yytext));
-[():,]                          add_punct(*yytext);
-{Ident}                         add_ident(yytext);
+{Instr}                         LBEE_YAS::add_instr(yytext);
+{Reg}                           LBEE_YAS::add_reg(yytext);
+[-]?{Digit}+                    LBEE_YAS::add_num(atoll(yytext));
+"0"[xX]{Hex}+                   LBEE_YAS::add_num(LBEE_YAS::atollh(yytext));
+[():,]                          LBEE_YAS::add_punct(*yytext);
+{Ident}                         LBEE_YAS::add_ident(yytext);
 {Char}                          {; BEGIN ERR;}
-<ERR>{Char}*{Newline}           {fail("Invalid line"); lineno++; BEGIN 0;}
+<ERR>{Char}*{Newline}           {LBEE_YAS::fail("Invalid line"); LBEE_YAS::lineno++; BEGIN 0;}
 %%

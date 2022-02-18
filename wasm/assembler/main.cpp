@@ -102,3 +102,8 @@ int main_func(int argc, char *argv[])
    fclose(LBEE_YAS::outfile);
    return LBEE_YAS::hit_error;
 }
+
+int main(int argc, char *argv[])
+{
+   return main_func(argc, argv);
+}
