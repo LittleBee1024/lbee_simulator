@@ -9,7 +9,7 @@ TARGET=yas
 SRCS := isa.cpp lexer.cpp main.cpp
 OBJS := $(LEX_GEN:.cpp=.o) $(SRCS:.cpp=.o)
 
-all: $(TARGET)
+all: clean $(TARGET)
 
 $(LEX_GEN): lexer.lex
 	$(LEX) -P yas -o $@ $<
