@@ -92,7 +92,8 @@ namespace
             LBEE_YAS::fail("Line too long");
             return;
          }
-         t = strcpy(strbuf + strpos, s);
+         snprintf(strbuf + strpos, len, "%s", s);
+         t = strbuf + strpos;
          strpos += len;
       }
       tokens[tcount].type = type;
@@ -116,8 +117,9 @@ namespace
 
    void add_symbol(char *name, int p)
    {
-      char *t = (char *)malloc(strlen(name) + 1);
-      strcpy(t, name);
+      size_t len = strlen(name) + 1;
+      char *t = reinterpret_cast<char *>(malloc(len));
+      snprintf(t, len, "%s", name);
       symbol_table[symbol_cnt].name = t;
       symbol_table[symbol_cnt].pos = p;
       symbol_cnt++;
@@ -254,13 +256,13 @@ namespace
                LBEE_YAS::fail("Code address limit exceeded");
                exit(1);
             }
-            strcpy(outstring, "0x0000:                      | ");
+            snprintf(outstring, sizeof(outstring), "0x0000:                      | ");
             hexstuff(outstring + 2, pos, 4);
             for (i = 0; i < bcount; i++)
                hexstuff(outstring + 7 + 2 * i, code[i] & 0xFF, 2);
          }
          else
-            strcpy(outstring, "                             | ");
+            snprintf(outstring, sizeof(outstring), "                             | ");
       }
       else
       {
@@ -272,13 +274,13 @@ namespace
                LBEE_YAS::fail("Code address limit exceeded");
                exit(1);
             }
-            strcpy(outstring, "0x000:                      | ");
+            snprintf(outstring, sizeof(outstring), "0x000:                      | ");
             hexstuff(outstring + 2, pos, 3);
             for (i = 0; i < bcount; i++)
                hexstuff(outstring + 7 + 2 * i, code[i] & 0xFF, 2);
          }
          else
-            strcpy(outstring, "                            | ");
+            snprintf(outstring, sizeof(outstring), "                            | ");
       }
       if (LBEE_YAS::vcode)
       {
@@ -290,7 +292,10 @@ namespace
             {
                if (LBEE_YAS::block_factor)
                {
-                  fprintf(out, "    bank%d[%d] = 8\'h%.2x;\n", (pos + i) % LBEE_YAS::block_factor, (pos + i) / LBEE_YAS::block_factor, code[i] & 0xFF);
+                  fprintf(out, "    bank%d[%d] = 8\'h%.2x;\n",
+                     (pos + i) % LBEE_YAS::block_factor,
+                     (pos + i) / LBEE_YAS::block_factor,
+                     code[i] & 0xFF);
                }
                else
                {
@@ -322,11 +327,11 @@ namespace LBEE_YAS
 
    void save_line(char *s)
    {
-      int len = strlen(s);
+      int len = strlen(s); // without copying the newline character
       int i;
       if (len >= STRMAX)
          fail("Input Line too long");
-      strcpy(input_line, s);
+      snprintf(input_line, len, "%s", s);
       for (i = len - 1; input_line[i] == '\n' || input_line[i] == '\r'; i--)
          input_line[i] = '\0'; /* Remove terminator */
    }
@@ -341,7 +346,7 @@ namespace LBEE_YAS
       add_token(TOK_REG, s, 0, ' ');
    }
 
-   void add_num(long long i)
+   void add_num(int64_t i)
    {
       add_token(TOK_NUM, NULL, i, ' ');
    }
@@ -525,9 +530,9 @@ namespace LBEE_YAS
       start_line();
    }
 
-   unsigned long long atollh(const char *p)
+   uint64_t atollh(const char *p)
    {
-      return strtoull(p, (char **)NULL, 16);
+      return strtoull(p, nullptr, 16);
    }
 
 }

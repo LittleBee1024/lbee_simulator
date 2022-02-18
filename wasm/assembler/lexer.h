@@ -33,11 +33,11 @@ namespace LBEE_YAS
    void save_line(char *);
    void add_instr(char *);
    void add_reg(char *);
-   void add_num(long long);
+   void add_num(int64_t);
    void add_punct(char);
    void add_ident(char *);
    void fail(const char *);
    void finish_line();
 
-   unsigned long long atollh(const char *);
+   uint64_t atollh(const char *);
 }
