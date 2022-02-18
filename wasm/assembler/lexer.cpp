@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdexcept>
 
 namespace
 {
@@ -527,4 +528,63 @@ namespace LBEE_YAS
       print_code(outfile, savebytepos);
       start_line();
    }
+}
+
+YasLexer::YasLexer(const char *inFilename):
+   m_in(nullptr),
+   m_out(nullptr),
+   m_pass(0)
+{
+   m_in = fopen(inFilename, "r");
+   if (!m_in)
+   {
+      throw std::runtime_error("Can't open input file " + std::string(inFilename));
+   }
+   // yasin is a global variable defined in flex
+   yasin = m_in;
+}
+
+YasLexer::YasLexer(const char *buf, size_t size)
+{
+}
+
+void YasLexer::parse(const char *outFilename)
+{
+   m_out = fopen(outFilename, "w");
+   if (!m_out)
+   {
+      throw std::runtime_error("Can't open output file " + std::string(outFilename));
+   }
+   // TODO: replace LBEE_YAS::outfile with std::stringstream
+   LBEE_YAS::outfile = m_out;
+
+   m_pass = 1;
+   // TODO: remove LBEE_YAS::pass
+   LBEE_YAS::pass = m_pass;
+   resetYasIn();
+   yaslex(this);
+
+   m_pass = 2;
+   // TODO: remove LBEE_YAS::pass
+   LBEE_YAS::pass = m_pass;
+   resetYasIn();
+   yaslex(this);
+}
+
+YasLexer::~YasLexer()
+{
+   if (m_in)
+      fclose(m_in);
+   if (m_out)
+      fclose(m_out);
+}
+
+std::string YasLexer::parse()
+{
+   return "";
+}
+
+void YasLexer::resetYasIn()
+{
+   fseek(m_in, 0, SEEK_SET);
 }

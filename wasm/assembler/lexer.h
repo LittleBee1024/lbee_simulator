@@ -5,12 +5,31 @@
 #include <stdio.h>
 #include <string>
 
+class YasLexer
+{
+public:
+   explicit YasLexer(const char *inFilename);
+   explicit YasLexer(const char *buf, size_t size);
+   ~YasLexer();
+
+   void parse(const char *outFilename);
+   std::string parse();
+
+private:
+   void resetYasIn();
+
+private:
+   FILE *m_in;
+   FILE *m_out;
+   int m_pass;
+};
+
 /***************************************
  * Variables and functions from flex
  ***************************************/
 extern FILE *yasin;
 extern int yaslineno;
-extern int yaslex();
+extern int yaslex(YasLexer *);
 
 /***************************************
  * User define functions used in *.lex
@@ -34,21 +53,3 @@ namespace LBEE_YAS
    void fail(const char *);
    void finish_line();
 }
-
-class YasLexer
-{
-public:
-   explicit YasLexer(const char *inFilename);
-   YasLexer(const char *buf, size_t size);
-
-   std::string parse();
-   void parse(const char *outFilename);
-
-private:
-   void reset();
-
-private:
-   int m_pass;
-   FILE *m_in;
-   FILE *m_out;
-};

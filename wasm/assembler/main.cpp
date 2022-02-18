@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <string>
+#include <exception>
+#include <iostream>
 
 static void usage(char *pname)
 {
@@ -28,38 +30,24 @@ int mainImpl(int argc, char *argv[])
    if (!endsWith(infname, ".ys"))
       usage(argv[0]);
 
-   if (infname.size() > 500)
-   {
-      fprintf(stderr, "File name too long\n");
-      exit(1);
-   }
-
-   yasin = fopen(infname.c_str(), "r");
-   if (!yasin)
-   {
-      fprintf(stderr, "Can't open input file '%s'\n", infname.c_str());
-      exit(1);
-   }
-
    outfname = infname.substr(0, infname.find_last_of('.')) + ".yo";
-   LBEE_YAS::outfile = fopen(outfname.c_str(), "w");
-   if (!LBEE_YAS::outfile)
+
+   try{
+      YasLexer l(infname.c_str());
+      l.parse(outfname.c_str());
+   }
+   catch(std::exception &e)
    {
-      fprintf(stderr, "Can't open output file '%s'\n", outfname.c_str());
-      exit(1);
+      std::cerr << e.what() << std::endl;
+      return -1;
+   }
+   catch(...)
+   {
+      std::cerr << "Unknow error happens" << std::endl;
+      return -1;
    }
 
-   LBEE_YAS::pass = 1;
-   yaslex();
-   if (LBEE_YAS::hit_error)
-      exit(1);
-
-   LBEE_YAS::pass = 2;
-   fseek(yasin, 0, SEEK_SET);
-   yaslex();
-   fclose(yasin);
-   fclose(LBEE_YAS::outfile);
-   return LBEE_YAS::hit_error;
+   return 0;
 }
 
 int main(int argc, char *argv[])
