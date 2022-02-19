@@ -13,7 +13,6 @@ extern FILE *yasin;
 extern int yaslineno;
 extern int yaslex(YasLexer *);
 
-#define STRMAX 4096
 #define STAB 1000
 #define INIT_CNT 0
 
@@ -115,8 +114,6 @@ void YasLexer::save_line(char *s)
 {
    m_curLine.clear();
    m_curLine = s;
-   if (m_curLine.size() >= STRMAX)
-      fail("Input Line too long");
    for (size_t i = m_curLine.size() - 1; m_curLine[i] == '\n' || m_curLine[i] == '\r'; i--)
       m_curLine[i] = '\0';
 }
