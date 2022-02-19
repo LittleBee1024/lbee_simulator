@@ -41,7 +41,7 @@ public:
    explicit YasLexer(const char *buf, size_t size);
    ~YasLexer();
 
-   void parse(const char *outFilename);
+   int parse(const char *outFilename);
    std::string parse();
 
 public:
@@ -72,11 +72,18 @@ private:
 private:
    FILE *m_in;
    FILE *m_out;
-   int m_pass;
+
    // symbole table
    std::vector<symbol_t> m_symbols;
+
+   int m_pass;
+   // set when any error happened
+   int m_hitError;
    // address of current instruction being processed
    int m_addr;
+
+   // current has error or not
+   bool m_errorLine;
    // current line string
    std::string m_curLine;
    // tokens in current line

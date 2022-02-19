@@ -19,10 +19,11 @@ static bool endsWith(const std::string &str, const std::string &suffix)
 
 static int parseFromFile(const char *infname, const char *outfname)
 {
+   int ret = 0;
    try
    {
       YasLexer l(infname);
-      l.parse(outfname);
+      ret = l.parse(outfname);
    }
    catch (const std::exception &e)
    {
@@ -35,7 +36,7 @@ static int parseFromFile(const char *infname, const char *outfname)
       return -1;
    }
 
-   return 0;
+   return ret;
 }
 
 int main(int argc, char *argv[])

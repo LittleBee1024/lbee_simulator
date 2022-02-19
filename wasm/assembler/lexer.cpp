@@ -13,16 +13,12 @@ extern FILE *yasin;
 extern int yaslineno;
 extern int yaslex(YasLexer *);
 
-namespace
-{
-   // Am I trying to finish off a line with an error
-   int error_mode = 0;
-}
-
 YasLexer::YasLexer(const char *inFilename) : m_in(nullptr),
                                              m_out(nullptr),
                                              m_pass(0),
+                                             m_hitError(0),
                                              m_addr(0),
+                                             m_errorLine(false),
                                              m_tokenPos(0)
 {
    m_in = fopen(inFilename, "r");
@@ -38,7 +34,7 @@ YasLexer::YasLexer(const char *buf, size_t size)
 {
 }
 
-void YasLexer::parse(const char *outFilename)
+int YasLexer::parse(const char *outFilename)
 {
    m_out = fopen(outFilename, "w");
    if (!m_out)
@@ -49,10 +45,13 @@ void YasLexer::parse(const char *outFilename)
    m_pass = 1;
    resetYasIn();
    yaslex(this);
+   if (m_hitError)
+      return m_hitError;
 
    m_pass = 2;
    resetYasIn();
    yaslex(this);
+   return m_hitError;
 }
 
 YasLexer::~YasLexer()
@@ -125,7 +124,7 @@ void YasLexer::finish_line()
       return; /* Empty line */
    }
    /* Completion of an erroneous line */
-   if (error_mode)
+   if (m_errorLine)
    {
       start_line();
       return;
@@ -269,18 +268,20 @@ void YasLexer::finish_line()
 
 void YasLexer::fail(const char *message)
 {
-   if (!error_mode)
+   if (!m_errorLine)
    {
       fprintf(stderr, "Error on line %d: %s\n", yaslineno, message);
       fprintf(stderr, "Line %d, Byte 0x%.4x: %s\n",
               yaslineno, m_addr, m_curLine.c_str());
    }
-   error_mode = 1;
+   m_errorLine = true;
+   m_hitError = 1;
 }
 
 void YasLexer::start_line()
 {
-   error_mode = 0;
+   // clear the error of the line to continue the next line
+   m_errorLine = false;
    m_tokenPos = 0;
    m_tokens.clear();
    m_curCode.clear();

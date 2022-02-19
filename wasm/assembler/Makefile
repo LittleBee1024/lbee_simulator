@@ -21,9 +21,7 @@ $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) $^ -o $@
 
 run:
-	./$(TARGET) code.ys
-	cat code.yo
-	diff code.yo code.yo.golden
+	./$(TARGET) code.ys && diff code.yo code.yo.golden && cat code.yo
 
 clean:
 	rm -rf $(TARGET) $(LEX_GEN) *.o *.yo
