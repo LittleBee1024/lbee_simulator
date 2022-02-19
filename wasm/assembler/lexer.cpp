@@ -15,8 +15,6 @@ extern int yaslex(YasLexer *);
 
 namespace
 {
-   // Address of current instruction being processed
-   int bytepos = 0;
    // Am I trying to finish off a line with an error
    int error_mode = 0;
 
@@ -28,6 +26,7 @@ namespace
 YasLexer::YasLexer(const char *inFilename) : m_in(nullptr),
                                              m_out(nullptr),
                                              m_pass(0),
+                                             m_addr(0),
                                              m_tokenPos(0)
 {
    m_in = fopen(inFilename, "r");
@@ -122,12 +121,12 @@ void YasLexer::finish_line()
 {
    int size;
    instr_ptr instr;
-   int savebytepos = bytepos;
+   int savedAddr = m_addr;
    m_tokenPos = 0;
    if (m_tokens.empty())
    {
       if (m_pass > 1)
-         print_code(outfile, savebytepos);
+         print_code(outfile, savedAddr);
       start_line();
       return; /* Empty line */
    }
@@ -150,13 +149,13 @@ void YasLexer::finish_line()
       else
       {
          if (m_pass == 1)
-            add_symbol(m_tokens[0].sval.c_str(), bytepos);
+            add_symbol(m_tokens[0].sval.c_str(), m_addr);
          m_tokenPos += 2;
          if (m_tokens.size() == 2)
          {
             /* That's all for this line */
             if (m_pass > 1)
-               print_code(outfile, savebytepos);
+               print_code(outfile, savedAddr);
             start_line();
             return;
          }
@@ -178,10 +177,10 @@ void YasLexer::finish_line()
          start_line();
          return;
       }
-      bytepos = m_tokens[m_tokenPos].ival;
+      m_addr = m_tokens[m_tokenPos].ival;
       if (m_pass > 1)
       {
-         print_code(outfile, bytepos);
+         print_code(outfile, m_addr);
       }
       start_line();
       return;
@@ -196,11 +195,11 @@ void YasLexer::finish_line()
          start_line();
          return;
       }
-      bytepos = ((bytepos + a - 1) / a) * a;
+      m_addr = ((m_addr + a - 1) / a) * a;
 
       if (m_pass > 1)
       {
-         print_code(outfile, bytepos);
+         print_code(outfile, m_addr);
       }
       start_line();
       return;
@@ -213,7 +212,7 @@ void YasLexer::finish_line()
       instr = bad_instr();
    }
    size = instr->bytes;
-   bytepos += size;
+   m_addr += size;
    m_curCode.resize(size, 0);
 
    /* If this is m_pass 1, then we're done */
@@ -270,7 +269,7 @@ void YasLexer::finish_line()
       }
    }
 
-   print_code(outfile, savebytepos);
+   print_code(outfile, savedAddr);
    start_line();
 }
 
@@ -280,7 +279,7 @@ void YasLexer::fail(const char *message)
    {
       fprintf(stderr, "Error on line %d: %s\n", yaslineno, message);
       fprintf(stderr, "Line %d, Byte 0x%.4x: %s\n",
-              yaslineno, bytepos, m_curLine.c_str());
+              yaslineno, m_addr, m_curLine.c_str());
    }
    error_mode = 1;
    hit_error = 1;
@@ -291,6 +290,7 @@ void YasLexer::start_line()
    error_mode = 0;
    m_tokenPos = 0;
    m_tokens.clear();
+   m_curCode.clear();
 }
 
 void YasLexer::add_token(token_t type, char *s, word_t i, char c)

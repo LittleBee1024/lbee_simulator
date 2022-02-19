@@ -75,6 +75,8 @@ private:
    int m_pass;
    // symbole table
    std::vector<symbol_t> m_symbols;
+   // address of current instruction being processed
+   int m_addr;
    // current line string
    std::string m_curLine;
    // tokens in current line
