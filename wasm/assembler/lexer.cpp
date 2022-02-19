@@ -18,8 +18,6 @@ extern int yaslex(YasLexer *);
 
 namespace
 {
-   // What token am I currently processing
-   int tpos;
    // Address of current instruction being processed
    int bytepos = 0;
    // Am I trying to finish off a line with an error
@@ -52,7 +50,8 @@ namespace
 
 YasLexer::YasLexer(const char *inFilename) : m_in(nullptr),
                                              m_out(nullptr),
-                                             m_pass(0)
+                                             m_pass(0),
+                                             m_tokenPos(0)
 {
    m_in = fopen(inFilename, "r");
    if (!m_in)
@@ -151,7 +150,7 @@ void YasLexer::finish_line()
    int size;
    instr_ptr instr;
    int savebytepos = bytepos;
-   tpos = 0;
+   m_tokenPos = 0;
    codepos = 0;
    if (m_tokens.empty())
    {
@@ -180,7 +179,7 @@ void YasLexer::finish_line()
       {
          if (pass == 1)
             add_symbol(m_tokens[0].sval.c_str(), bytepos);
-         tpos += 2;
+         m_tokenPos += 2;
          if (m_tokens.size() == 2)
          {
             /* That's all for this line */
@@ -192,22 +191,22 @@ void YasLexer::finish_line()
       }
    }
    /* Get instruction */
-   if (m_tokens[tpos].type != TOK_INSTR)
+   if (m_tokens[m_tokenPos].type != TOK_INSTR)
    {
       fail("Bad Instruction");
       start_line();
       return;
    }
    /* Process .pos */
-   if (strcmp(m_tokens[tpos].sval.c_str(), ".pos") == 0)
+   if (strcmp(m_tokens[m_tokenPos].sval.c_str(), ".pos") == 0)
    {
-      if (m_tokens[++tpos].type != TOK_NUM)
+      if (m_tokens[++m_tokenPos].type != TOK_NUM)
       {
          fail("Invalid Address");
          start_line();
          return;
       }
-      bytepos = m_tokens[tpos].ival;
+      bytepos = m_tokens[m_tokenPos].ival;
       if (pass > 1)
       {
          print_code(outfile, bytepos);
@@ -216,10 +215,10 @@ void YasLexer::finish_line()
       return;
    }
    /* Process .align */
-   if (strcmp(m_tokens[tpos].sval.c_str(), ".align") == 0)
+   if (strcmp(m_tokens[m_tokenPos].sval.c_str(), ".align") == 0)
    {
       int a;
-      if (m_tokens[++tpos].type != TOK_NUM || (a = m_tokens[tpos].ival) <= 0)
+      if (m_tokens[++m_tokenPos].type != TOK_NUM || (a = m_tokens[m_tokenPos].ival) <= 0)
       {
          fail("Invalid Alignment");
          start_line();
@@ -235,7 +234,7 @@ void YasLexer::finish_line()
       return;
    }
    /* Get instruction size */
-   instr = find_instr(m_tokens[tpos++].sval.c_str());
+   instr = find_instr(m_tokens[m_tokenPos++].sval.c_str());
    if (instr == NULL)
    {
       fail("Invalid Instruction");
@@ -273,13 +272,13 @@ void YasLexer::finish_line()
    if (instr->arg2 != NO_ARG)
    {
       /* Get comma  */
-      if (m_tokens[tpos].type != TOK_PUNCT || m_tokens[tpos].cval != ',')
+      if (m_tokens[m_tokenPos].type != TOK_PUNCT || m_tokens[m_tokenPos].cval != ',')
       {
          fail("Expecting Comma");
          start_line();
          return;
       }
-      tpos++;
+      m_tokenPos++;
 
       /* Get second argument */
       switch (instr->arg2)
@@ -318,7 +317,7 @@ void YasLexer::fail(const char *message)
 void YasLexer::start_line()
 {
    error_mode = 0;
-   tpos = 0;
+   m_tokenPos = 0;
    bcount = 0;
    m_tokens.clear();
 }
@@ -373,14 +372,14 @@ void YasLexer::get_reg(int codepos, int hi)
 {
    int rval = REG_NONE;
    char c;
-   if (m_tokens[tpos].type != TOK_REG)
+   if (m_tokens[m_tokenPos].type != TOK_REG)
    {
       fail("Expecting Register ID");
       return;
    }
    else
    {
-      rval = find_register(m_tokens[tpos].sval.c_str());
+      rval = find_register(m_tokens[m_tokenPos].sval.c_str());
    }
    /* Insert into output */
    c = code[codepos];
@@ -389,7 +388,7 @@ void YasLexer::get_reg(int codepos, int hi)
    else
       c = (c & 0xF0) | rval;
    code[codepos] = c;
-   tpos++;
+   m_tokenPos++;
 }
 
 /* Get memory reference.
@@ -407,32 +406,32 @@ void YasLexer::get_mem(int codepos)
    word_t val = 0;
    int i;
    char c;
-   token_t type = m_tokens[tpos].type;
+   token_t type = m_tokens[m_tokenPos].type;
    /* Deal with optional displacement */
    if (type == TOK_NUM)
    {
-      val = m_tokens[tpos++].ival;
-      type = m_tokens[tpos].type;
+      val = m_tokens[m_tokenPos++].ival;
+      type = m_tokens[m_tokenPos].type;
    }
    else if (type == TOK_IDENT)
    {
-      val = find_symbol(m_tokens[tpos++].sval.c_str());
-      type = m_tokens[tpos].type;
+      val = find_symbol(m_tokens[m_tokenPos++].sval.c_str());
+      type = m_tokens[m_tokenPos].type;
    }
    /* Check for optional register */
    if (type == TOK_PUNCT)
    {
-      if (m_tokens[tpos].cval == '(')
+      if (m_tokens[m_tokenPos].cval == '(')
       {
-         tpos++;
-         if (m_tokens[tpos].type == TOK_REG)
-            rval = find_register(m_tokens[tpos++].sval.c_str());
+         m_tokenPos++;
+         if (m_tokens[m_tokenPos].type == TOK_REG)
+            rval = find_register(m_tokens[m_tokenPos++].sval.c_str());
          else
          {
             fail("Expecting Register Id");
             return;
          }
-         if (m_tokens[tpos].type != TOK_PUNCT || m_tokens[tpos++].cval != ')')
+         if (m_tokens[m_tokenPos].type != TOK_PUNCT || m_tokens[m_tokenPos++].cval != ')')
          {
             fail("Expecting ')'");
             return;
@@ -451,13 +450,13 @@ void YasLexer::get_num(int codepos, int bytes, int offset)
 {
    word_t val = 0;
    int i;
-   if (m_tokens[tpos].type == TOK_NUM)
+   if (m_tokens[m_tokenPos].type == TOK_NUM)
    {
-      val = m_tokens[tpos].ival;
+      val = m_tokens[m_tokenPos].ival;
    }
-   else if (m_tokens[tpos].type == TOK_IDENT)
+   else if (m_tokens[m_tokenPos].type == TOK_IDENT)
    {
-      val = find_symbol(m_tokens[tpos].sval.c_str());
+      val = find_symbol(m_tokens[m_tokenPos].sval.c_str());
    }
    else
    {
@@ -467,7 +466,7 @@ void YasLexer::get_num(int codepos, int bytes, int offset)
    val -= offset;
    for (i = 0; i < bytes; i++)
       code[codepos + i] = (val >> (i * 8)) & 0xFF;
-   tpos++;
+   m_tokenPos++;
 }
 /**
     * Printing format:

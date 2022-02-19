@@ -70,5 +70,7 @@ private:
    std::string m_curLine;
    // tokens in current line
    std::vector<token_rec> m_tokens;
+   // current process token position
+   int m_tokenPos;
 };
 
