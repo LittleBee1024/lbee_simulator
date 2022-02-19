@@ -22,7 +22,6 @@ namespace
 
    /* Information about current instruction being generated */
    char code[10];   /* Byte encoding */
-   int codepos = 0; /* Current position in byte encoding */
    int bcount = 0;  /* Length of current instruction */
 
    FILE *outfile;
@@ -129,7 +128,6 @@ void YasLexer::finish_line()
    instr_ptr instr;
    int savebytepos = bytepos;
    m_tokenPos = 0;
-   codepos = 0;
    if (m_tokens.empty())
    {
       if (m_pass > 1)
@@ -443,11 +441,11 @@ void YasLexer::get_num(int codepos, int bytes, int offset)
    m_tokenPos++;
 }
 /**
-    * Printing format:
-    *  0xHHHH: cccccccccccccccccccc | <line>
-    *      where HHHH is address
-    *      cccccccccccccccccccc is code
-    */
+ * Printing format:
+ *  0xHHHH: cccccccccccccccccccc | <line>
+ *      where HHHH is address
+ *      cccccccccccccccccccc is code
+ */
 void YasLexer::print_code(FILE *out, int pos)
 {
    char outstring[33];
