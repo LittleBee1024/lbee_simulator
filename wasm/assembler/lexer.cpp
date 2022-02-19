@@ -18,24 +18,13 @@ extern int yaslex(YasLexer *);
 #define STAB 1000
 #define INIT_CNT 0
 
-// Token representation
-typedef struct
-{
-   char *sval;   /* String    */
-   word_t ival;  /* Integer   */
-   char cval;    /* Character */
-   token_t type; /* Type    */
-} token_rec, *token_ptr;
-
 namespace
 {
    // Storage for strings in current line
    char strbuf[STRMAX];
    int strpos;
 
-   /* Information about current input line */
-   token_rec tokens[TOK_PER_LINE];
-   // the number of tokens in this line
+   // the number of m_tokens in this line
    int tcount;
    // What token am I currently processing
    int tpos;
@@ -189,9 +178,9 @@ void YasLexer::finish_line()
    }
 
    /* See if this is a labeled line */
-   if (tokens[0].type == TOK_IDENT)
+   if (m_tokens[0].type == TOK_IDENT)
    {
-      if (tokens[1].type != TOK_PUNCT || tokens[1].cval != ':')
+      if (m_tokens[1].type != TOK_PUNCT || m_tokens[1].cval != ':')
       {
          fail("Missing Colon");
          start_line();
@@ -200,7 +189,7 @@ void YasLexer::finish_line()
       else
       {
          if (pass == 1)
-            add_symbol(tokens[0].sval, bytepos);
+            add_symbol(m_tokens[0].sval, bytepos);
          tpos += 2;
          if (tcount == 2)
          {
@@ -213,22 +202,22 @@ void YasLexer::finish_line()
       }
    }
    /* Get instruction */
-   if (tokens[tpos].type != TOK_INSTR)
+   if (m_tokens[tpos].type != TOK_INSTR)
    {
       fail("Bad Instruction");
       start_line();
       return;
    }
    /* Process .pos */
-   if (strcmp(tokens[tpos].sval, ".pos") == 0)
+   if (strcmp(m_tokens[tpos].sval, ".pos") == 0)
    {
-      if (tokens[++tpos].type != TOK_NUM)
+      if (m_tokens[++tpos].type != TOK_NUM)
       {
          fail("Invalid Address");
          start_line();
          return;
       }
-      bytepos = tokens[tpos].ival;
+      bytepos = m_tokens[tpos].ival;
       if (pass > 1)
       {
          print_code(outfile, bytepos);
@@ -237,10 +226,10 @@ void YasLexer::finish_line()
       return;
    }
    /* Process .align */
-   if (strcmp(tokens[tpos].sval, ".align") == 0)
+   if (strcmp(m_tokens[tpos].sval, ".align") == 0)
    {
       int a;
-      if (tokens[++tpos].type != TOK_NUM || (a = tokens[tpos].ival) <= 0)
+      if (m_tokens[++tpos].type != TOK_NUM || (a = m_tokens[tpos].ival) <= 0)
       {
          fail("Invalid Alignment");
          start_line();
@@ -256,7 +245,7 @@ void YasLexer::finish_line()
       return;
    }
    /* Get instruction size */
-   instr = find_instr(tokens[tpos++].sval);
+   instr = find_instr(m_tokens[tpos++].sval);
    if (instr == NULL)
    {
       fail("Invalid Instruction");
@@ -294,7 +283,7 @@ void YasLexer::finish_line()
    if (instr->arg2 != NO_ARG)
    {
       /* Get comma  */
-      if (tokens[tpos].type != TOK_PUNCT || tokens[tpos].cval != ',')
+      if (m_tokens[tpos].type != TOK_PUNCT || m_tokens[tpos].cval != ',')
       {
          fail("Expecting Comma");
          start_line();
@@ -338,14 +327,12 @@ void YasLexer::fail(const char *message)
 
 void YasLexer::start_line()
 {
-   int t;
    error_mode = 0;
    tpos = 0;
    tcount = 0;
    bcount = 0;
    strpos = 0;
-   for (t = 0; t < TOK_PER_LINE; t++)
-      tokens[t].type = TOK_ERR;
+   m_tokens.clear();
 }
 
 void YasLexer::add_token(token_t type, char *s, word_t i, char c)
@@ -370,10 +357,12 @@ void YasLexer::add_token(token_t type, char *s, word_t i, char c)
       t = strbuf + strpos;
       strpos += len;
    }
-   tokens[tcount].type = type;
-   tokens[tcount].sval = t;
-   tokens[tcount].ival = i;
-   tokens[tcount].cval = c;
+   token_rec token;
+   token.type = type;
+   token.sval = t;
+   token.ival = i;
+   token.cval = c;
+   m_tokens.push_back(token);
    tcount++;
 }
 
@@ -409,20 +398,20 @@ int YasLexer::find_symbol(char *name)
    return -1;
 }
 
-/* Parse Register from set of tokens and put into high or low
+/* Parse Register from set of m_tokens and put into high or low
    4 bits of code[codepos] */
 void YasLexer::get_reg(int codepos, int hi)
 {
    int rval = REG_NONE;
    char c;
-   if (tokens[tpos].type != TOK_REG)
+   if (m_tokens[tpos].type != TOK_REG)
    {
       fail("Expecting Register ID");
       return;
    }
    else
    {
-      rval = find_register(tokens[tpos].sval);
+      rval = find_register(m_tokens[tpos].sval);
    }
    /* Insert into output */
    c = code[codepos];
@@ -449,32 +438,32 @@ void YasLexer::get_mem(int codepos)
    word_t val = 0;
    int i;
    char c;
-   token_t type = tokens[tpos].type;
+   token_t type = m_tokens[tpos].type;
    /* Deal with optional displacement */
    if (type == TOK_NUM)
    {
-      val = tokens[tpos++].ival;
-      type = tokens[tpos].type;
+      val = m_tokens[tpos++].ival;
+      type = m_tokens[tpos].type;
    }
    else if (type == TOK_IDENT)
    {
-      val = find_symbol(tokens[tpos++].sval);
-      type = tokens[tpos].type;
+      val = find_symbol(m_tokens[tpos++].sval);
+      type = m_tokens[tpos].type;
    }
    /* Check for optional register */
    if (type == TOK_PUNCT)
    {
-      if (tokens[tpos].cval == '(')
+      if (m_tokens[tpos].cval == '(')
       {
          tpos++;
-         if (tokens[tpos].type == TOK_REG)
-            rval = find_register(tokens[tpos++].sval);
+         if (m_tokens[tpos].type == TOK_REG)
+            rval = find_register(m_tokens[tpos++].sval);
          else
          {
             fail("Expecting Register Id");
             return;
          }
-         if (tokens[tpos].type != TOK_PUNCT || tokens[tpos++].cval != ')')
+         if (m_tokens[tpos].type != TOK_PUNCT || m_tokens[tpos++].cval != ')')
          {
             fail("Expecting ')'");
             return;
@@ -493,13 +482,13 @@ void YasLexer::get_num(int codepos, int bytes, int offset)
 {
    word_t val = 0;
    int i;
-   if (tokens[tpos].type == TOK_NUM)
+   if (m_tokens[tpos].type == TOK_NUM)
    {
-      val = tokens[tpos].ival;
+      val = m_tokens[tpos].ival;
    }
-   else if (tokens[tpos].type == TOK_IDENT)
+   else if (m_tokens[tpos].type == TOK_IDENT)
    {
-      val = find_symbol(tokens[tpos].sval);
+      val = find_symbol(m_tokens[tpos].sval);
    }
    else
    {

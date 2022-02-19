@@ -6,8 +6,8 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string>
+#include <vector>
 
-// Token types
 typedef enum
 {
    TOK_IDENT,
@@ -17,6 +17,15 @@ typedef enum
    TOK_PUNCT,
    TOK_ERR
 } token_t;
+
+// Token representation
+typedef struct
+{
+   char *sval;   /* String    */
+   word_t ival;  /* Integer   */
+   char cval;    /* Character */
+   token_t type; /* Type    */
+} token_rec, *token_ptr;
 
 class YasLexer
 {
@@ -58,5 +67,6 @@ private:
    FILE *m_out;
    int m_pass;
    std::string m_curLine;
+   std::vector<token_rec> m_tokens;
 };
 
