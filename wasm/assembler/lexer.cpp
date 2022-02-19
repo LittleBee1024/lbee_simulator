@@ -17,8 +17,6 @@ namespace
 {
    // Am I trying to finish off a line with an error
    int error_mode = 0;
-
-   FILE *outfile;
 }
 
 YasLexer::YasLexer(const char *inFilename) : m_in(nullptr),
@@ -47,8 +45,6 @@ void YasLexer::parse(const char *outFilename)
    {
       throw std::runtime_error("Can't open output file " + std::string(outFilename));
    }
-   // TODO: replace outfile with std::ostream
-   outfile = m_out;
 
    m_pass = 1;
    resetYasIn();
@@ -124,7 +120,7 @@ void YasLexer::finish_line()
    if (m_tokens.empty())
    {
       if (m_pass > 1)
-         print_code(outfile, savedAddr);
+         print_code(m_out, savedAddr);
       start_line();
       return; /* Empty line */
    }
@@ -153,7 +149,7 @@ void YasLexer::finish_line()
          {
             /* That's all for this line */
             if (m_pass > 1)
-               print_code(outfile, savedAddr);
+               print_code(m_out, savedAddr);
             start_line();
             return;
          }
@@ -178,7 +174,7 @@ void YasLexer::finish_line()
       m_addr = m_tokens[m_tokenPos].ival;
       if (m_pass > 1)
       {
-         print_code(outfile, m_addr);
+         print_code(m_out, m_addr);
       }
       start_line();
       return;
@@ -197,7 +193,7 @@ void YasLexer::finish_line()
 
       if (m_pass > 1)
       {
-         print_code(outfile, m_addr);
+         print_code(m_out, m_addr);
       }
       start_line();
       return;
@@ -267,7 +263,7 @@ void YasLexer::finish_line()
       }
    }
 
-   print_code(outfile, savedAddr);
+   print_code(m_out, savedAddr);
    start_line();
 }
 
