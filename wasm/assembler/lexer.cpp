@@ -13,9 +13,6 @@ extern FILE *yasin;
 extern int yaslineno;
 extern int yaslex(YasLexer *);
 
-#define STAB 1000
-#define INIT_CNT 0
-
 namespace
 {
    // Address of current instruction being processed
