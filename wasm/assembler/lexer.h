@@ -21,11 +21,18 @@ typedef enum
 // Token representation
 typedef struct
 {
-   std::string sval;   /* String    */
-   word_t ival;  /* Integer   */
-   char cval;    /* Character */
-   token_t type; /* Type    */
+   std::string sval; /* String    */
+   word_t ival;      /* Integer   */
+   char cval;        /* Character */
+   token_t type;     /* Type    */
 } token_rec, *token_ptr;
+
+struct symbol_t
+{
+   symbol_t(const char *n, int p): name(n), pos(p) {}
+   std::string name;
+   int pos;
+};
 
 class YasLexer
 {
@@ -72,5 +79,6 @@ private:
    std::vector<token_rec> m_tokens;
    // current process token position
    int m_tokenPos;
+   // symbole table
+   std::vector<symbol_t> m_symbols;
 };
-

@@ -33,15 +33,6 @@ namespace
    FILE *outfile;
    // Have I hit any errors
    int hit_error = 0;
-
-   // Symbol table
-   int symbol_cnt = INIT_CNT;
-   struct
-   {
-      char *name;
-      int pos;
-   } symbol_table[STAB];
-
 }
 
 YasLexer::YasLexer(const char *inFilename) : m_in(nullptr),
@@ -344,20 +335,16 @@ void YasLexer::hexstuff(char *dest, word_t value, int len)
 
 void YasLexer::add_symbol(const char *name, int p)
 {
-   size_t len = strlen(name) + 1;
-   char *t = reinterpret_cast<char *>(malloc(len));
-   snprintf(t, len, "%s", name);
-   symbol_table[symbol_cnt].name = t;
-   symbol_table[symbol_cnt].pos = p;
-   symbol_cnt++;
+   m_symbols.emplace_back(name, p);
 }
 
 int YasLexer::find_symbol(const char *name)
 {
-   int i;
-   for (i = 0; i < symbol_cnt; i++)
-      if (strcmp(name, symbol_table[i].name) == 0)
-         return symbol_table[i].pos;
+   for (const auto &s : m_symbols)
+   {
+      if (s.name.compare(name) == 0)
+         return s.pos;
+   }
    fail("Can't find label");
    return -1;
 }
