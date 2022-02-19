@@ -18,8 +18,6 @@ extern int yaslex(YasLexer *);
 
 namespace
 {
-   // the number of m_tokens in this line
-   int tcount;
    // What token am I currently processing
    int tpos;
    // Address of current instruction being processed
@@ -155,7 +153,7 @@ void YasLexer::finish_line()
    int savebytepos = bytepos;
    tpos = 0;
    codepos = 0;
-   if (tcount == 0)
+   if (m_tokens.empty())
    {
       if (pass > 1)
          print_code(outfile, savebytepos);
@@ -183,7 +181,7 @@ void YasLexer::finish_line()
          if (pass == 1)
             add_symbol(m_tokens[0].sval.c_str(), bytepos);
          tpos += 2;
-         if (tcount == 2)
+         if (m_tokens.size() == 2)
          {
             /* That's all for this line */
             if (pass > 1)
@@ -321,14 +319,13 @@ void YasLexer::start_line()
 {
    error_mode = 0;
    tpos = 0;
-   tcount = 0;
    bcount = 0;
    m_tokens.clear();
 }
 
 void YasLexer::add_token(token_t type, char *s, word_t i, char c)
 {
-   if (!tcount)
+   if (m_tokens.empty())
       start_line();
    token_rec token;
    token.type = type;
@@ -336,7 +333,6 @@ void YasLexer::add_token(token_t type, char *s, word_t i, char c)
    token.ival = i;
    token.cval = c;
    m_tokens.push_back(token);
-   tcount++;
 }
 
 void YasLexer::hexstuff(char *dest, word_t value, int len)
@@ -484,7 +480,7 @@ void YasLexer::print_code(FILE *out, int pos)
    char outstring[33];
    if (pos > 0xFFF)
    {
-      if (tcount)
+      if (m_tokens.size())
       {
          int i;
          if (pos > 0xFFFF)
@@ -502,7 +498,7 @@ void YasLexer::print_code(FILE *out, int pos)
    }
    else
    {
-      if (tcount)
+      if (m_tokens.size())
       {
          int i;
          if (pos > 0xFFF)
@@ -521,10 +517,10 @@ void YasLexer::print_code(FILE *out, int pos)
    if (vcode)
    {
       fprintf(out, "//%s%s\n", outstring, m_curLine.c_str());
-      if (tcount)
+      if (m_tokens.size())
       {
          int i;
-         for (i = 0; tcount && i < bcount; i++)
+         for (i = 0; m_tokens.size() && i < bcount; i++)
          {
             if (block_factor)
             {

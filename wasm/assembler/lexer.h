@@ -66,7 +66,9 @@ private:
    FILE *m_in;
    FILE *m_out;
    int m_pass;
+   // current line string
    std::string m_curLine;
+   // tokens in current line
    std::vector<token_rec> m_tokens;
 };
 
