@@ -28,12 +28,8 @@ namespace
    int codepos = 0; /* Current position in byte encoding */
    int bcount = 0;  /* Length of current instruction */
 
-   // Generate initialized memory for Verilog?
-   int vcode = 0;
    // Am I in pass 1 or 2
    int pass = 1;
-   //Should it generate code for banked memory?
-   int block_factor = 0;
    FILE *outfile;
    // Have I hit any errors
    int hit_error = 0;
@@ -513,30 +509,5 @@ void YasLexer::print_code(FILE *out, int pos)
       else
          snprintf(outstring, sizeof(outstring), "                            | ");
    }
-   if (vcode)
-   {
-      fprintf(out, "//%s%s\n", outstring, m_curLine.c_str());
-      if (m_tokens.size())
-      {
-         int i;
-         for (i = 0; m_tokens.size() && i < bcount; i++)
-         {
-            if (block_factor)
-            {
-               fprintf(out, "    bank%d[%d] = 8\'h%.2x;\n",
-                       (pos + i) % block_factor,
-                       (pos + i) / block_factor,
-                       code[i] & 0xFF);
-            }
-            else
-            {
-               fprintf(out, "    mem[%d] = 8\'h%.2x;\n", pos + i, code[i] & 0xFF);
-            }
-         }
-      }
-   }
-   else
-   {
-      fprintf(out, "%s%s\n", outstring, m_curLine.c_str());
-   }
+   fprintf(out, "%s%s\n", outstring, m_curLine.c_str());
 }
