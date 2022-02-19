@@ -19,8 +19,6 @@ namespace
    int error_mode = 0;
 
    FILE *outfile;
-   // Have I hit any errors
-   int hit_error = 0;
 }
 
 YasLexer::YasLexer(const char *inFilename) : m_in(nullptr),
@@ -282,7 +280,6 @@ void YasLexer::fail(const char *message)
               yaslineno, m_addr, m_curLine.c_str());
    }
    error_mode = 1;
-   hit_error = 1;
 }
 
 void YasLexer::start_line()
