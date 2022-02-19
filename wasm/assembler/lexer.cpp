@@ -14,7 +14,6 @@ extern int yaslineno;
 extern int yaslex(YasLexer *);
 
 #define STRMAX 4096
-#define TOK_PER_LINE 12
 #define STAB 1000
 #define INIT_CNT 0
 
@@ -340,11 +339,6 @@ void YasLexer::add_token(token_t type, char *s, word_t i, char c)
    char *t = NULL;
    if (!tcount)
       start_line();
-   if (tpos >= TOK_PER_LINE - 1)
-   {
-      fail("Line too long");
-      return;
-   }
    if (s)
    {
       int len = strlen(s) + 1;
