@@ -20,10 +20,6 @@ namespace
    // Am I trying to finish off a line with an error
    int error_mode = 0;
 
-   /* Information about current instruction being generated */
-   char code[10];   /* Byte encoding */
-   int bcount = 0;  /* Length of current instruction */
-
    FILE *outfile;
    // Have I hit any errors
    int hit_error = 0;
@@ -218,7 +214,7 @@ void YasLexer::finish_line()
    }
    size = instr->bytes;
    bytepos += size;
-   bcount = size;
+   m_curCode.resize(size, 0);
 
    /* If this is m_pass 1, then we're done */
    if (m_pass == 1)
@@ -228,8 +224,8 @@ void YasLexer::finish_line()
    }
 
    /* Here's where we really process the instructions */
-   code[0] = instr->code;
-   code[1] = HPACK(REG_NONE, REG_NONE);
+   m_curCode[0] = instr->code;
+   m_curCode[1] = HPACK(REG_NONE, REG_NONE);
    switch (instr->arg1)
    {
    case R_ARG:
@@ -294,7 +290,6 @@ void YasLexer::start_line()
 {
    error_mode = 0;
    m_tokenPos = 0;
-   bcount = 0;
    m_tokens.clear();
 }
 
@@ -354,12 +349,12 @@ void YasLexer::get_reg(int codepos, int hi)
       rval = find_register(m_tokens[m_tokenPos].sval.c_str());
    }
    /* Insert into output */
-   c = code[codepos];
+   c = m_curCode[codepos];
    if (hi)
       c = (c & 0x0F) | (rval << 4);
    else
       c = (c & 0xF0) | rval;
-   code[codepos] = c;
+   m_curCode[codepos] = c;
    m_tokenPos++;
 }
 
@@ -410,10 +405,10 @@ void YasLexer::get_mem(int codepos)
          }
       }
    }
-   c = (code[codepos] & 0xF0) | (rval & 0xF);
-   code[codepos++] = c;
+   c = (m_curCode[codepos] & 0xF0) | (rval & 0xF);
+   m_curCode[codepos++] = c;
    for (i = 0; i < 8; i++)
-      code[codepos + i] = (val >> (i * 8)) & 0xFF;
+      m_curCode[codepos + i] = (val >> (i * 8)) & 0xFF;
 }
 
 /* Get numeric value of given number of bytes */
@@ -437,7 +432,7 @@ void YasLexer::get_num(int codepos, int bytes, int offset)
    }
    val -= offset;
    for (i = 0; i < bytes; i++)
-      code[codepos + i] = (val >> (i * 8)) & 0xFF;
+      m_curCode[codepos + i] = (val >> (i * 8)) & 0xFF;
    m_tokenPos++;
 }
 /**
@@ -453,7 +448,6 @@ void YasLexer::print_code(FILE *out, int pos)
    {
       if (m_tokens.size())
       {
-         int i;
          if (pos > 0xFFFF)
          {
             fail("Code address limit exceeded");
@@ -461,8 +455,8 @@ void YasLexer::print_code(FILE *out, int pos)
          }
          snprintf(outstring, sizeof(outstring), "0x0000:                      | ");
          hexstuff(outstring + 2, pos, 4);
-         for (i = 0; i < bcount; i++)
-            hexstuff(outstring + 7 + 2 * i, code[i] & 0xFF, 2);
+         for (size_t i = 0; i < m_curCode.size(); i++)
+            hexstuff(outstring + 7 + 2 * i, m_curCode[i] & 0xFF, 2);
       }
       else
          snprintf(outstring, sizeof(outstring), "                             | ");
@@ -471,7 +465,6 @@ void YasLexer::print_code(FILE *out, int pos)
    {
       if (m_tokens.size())
       {
-         int i;
          if (pos > 0xFFF)
          {
             fail("Code address limit exceeded");
@@ -479,8 +472,8 @@ void YasLexer::print_code(FILE *out, int pos)
          }
          snprintf(outstring, sizeof(outstring), "0x000:                      | ");
          hexstuff(outstring + 2, pos, 3);
-         for (i = 0; i < bcount; i++)
-            hexstuff(outstring + 7 + 2 * i, code[i] & 0xFF, 2);
+         for (size_t i = 0; i < m_curCode.size(); i++)
+            hexstuff(outstring + 7 + 2 * i, m_curCode[i] & 0xFF, 2);
       }
       else
          snprintf(outstring, sizeof(outstring), "                            | ");

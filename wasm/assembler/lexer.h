@@ -73,12 +73,14 @@ private:
    FILE *m_in;
    FILE *m_out;
    int m_pass;
+   // symbole table
+   std::vector<symbol_t> m_symbols;
    // current line string
    std::string m_curLine;
    // tokens in current line
    std::vector<token_rec> m_tokens;
    // current process token position
    int m_tokenPos;
-   // symbole table
-   std::vector<symbol_t> m_symbols;
+   // current process code
+   std::vector<char> m_curCode;
 };
