@@ -28,8 +28,6 @@ namespace
    int codepos = 0; /* Current position in byte encoding */
    int bcount = 0;  /* Length of current instruction */
 
-   // Am I in pass 1 or 2
-   int pass = 1;
    FILE *outfile;
    // Have I hit any errors
    int hit_error = 0;
@@ -64,14 +62,10 @@ void YasLexer::parse(const char *outFilename)
    outfile = m_out;
 
    m_pass = 1;
-   // TODO: remove pass
-   pass = m_pass;
    resetYasIn();
    yaslex(this);
 
    m_pass = 2;
-   // TODO: remove pass
-   pass = m_pass;
    resetYasIn();
    yaslex(this);
 }
@@ -141,7 +135,7 @@ void YasLexer::finish_line()
    codepos = 0;
    if (m_tokens.empty())
    {
-      if (pass > 1)
+      if (m_pass > 1)
          print_code(outfile, savebytepos);
       start_line();
       return; /* Empty line */
@@ -164,13 +158,13 @@ void YasLexer::finish_line()
       }
       else
       {
-         if (pass == 1)
+         if (m_pass == 1)
             add_symbol(m_tokens[0].sval.c_str(), bytepos);
          m_tokenPos += 2;
          if (m_tokens.size() == 2)
          {
             /* That's all for this line */
-            if (pass > 1)
+            if (m_pass > 1)
                print_code(outfile, savebytepos);
             start_line();
             return;
@@ -194,7 +188,7 @@ void YasLexer::finish_line()
          return;
       }
       bytepos = m_tokens[m_tokenPos].ival;
-      if (pass > 1)
+      if (m_pass > 1)
       {
          print_code(outfile, bytepos);
       }
@@ -213,7 +207,7 @@ void YasLexer::finish_line()
       }
       bytepos = ((bytepos + a - 1) / a) * a;
 
-      if (pass > 1)
+      if (m_pass > 1)
       {
          print_code(outfile, bytepos);
       }
@@ -231,8 +225,8 @@ void YasLexer::finish_line()
    bytepos += size;
    bcount = size;
 
-   /* If this is pass 1, then we're done */
-   if (pass == 1)
+   /* If this is m_pass 1, then we're done */
+   if (m_pass == 1)
    {
       start_line();
       return;
