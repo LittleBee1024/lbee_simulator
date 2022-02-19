@@ -10,7 +10,6 @@
  * Variables and functions from flex
  ***************************************/
 extern FILE *yasin;
-extern int yaslineno;
 extern int yaslex(YasLexer *);
 
 YasLexer::YasLexer(const char *inFilename) : m_in(nullptr),
@@ -19,6 +18,7 @@ YasLexer::YasLexer(const char *inFilename) : m_in(nullptr),
                                              m_hitError(0),
                                              m_addr(0),
                                              m_errorLine(false),
+                                             m_curLineNum(1),
                                              m_tokenPos(0)
 {
    m_in = fopen(inFilename, "r");
@@ -65,6 +65,11 @@ YasLexer::~YasLexer()
 std::string YasLexer::parse()
 {
    return "";
+}
+
+void YasLexer::increase_line_num()
+{
+   m_curLineNum++;
 }
 
 void YasLexer::resetYasIn()
@@ -270,9 +275,9 @@ void YasLexer::fail(const char *message)
 {
    if (!m_errorLine)
    {
-      fprintf(stderr, "Error on line %d: %s\n", yaslineno, message);
+      fprintf(stderr, "Error on line %d: %s\n", m_curLineNum, message);
       fprintf(stderr, "Line %d, Byte 0x%.4x: %s\n",
-              yaslineno, m_addr, m_curLine.c_str());
+         m_curLineNum, m_addr, m_curLine.c_str());
    }
    m_errorLine = true;
    m_hitError = 1;

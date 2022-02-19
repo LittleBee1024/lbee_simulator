@@ -53,6 +53,7 @@ public:
    void add_ident(char *);
    void error(const char *);
    void finish_line();
+   void increase_line_num();
 
 private:
    void fail(const char *message);
@@ -84,6 +85,8 @@ private:
 
    // current has error or not
    bool m_errorLine;
+   // current line number
+   int m_curLineNum;
    // current line string
    std::string m_curLine;
    // tokens in current line
