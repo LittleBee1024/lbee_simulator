@@ -29,8 +29,6 @@ typedef struct
 
 namespace
 {
-   // Storage of current line
-   char input_line[STRMAX];
    // Storage for strings in current line
    char strbuf[STRMAX];
    int strpos;
@@ -131,13 +129,12 @@ void YasLexer::resetYasIn()
 
 void YasLexer::save_line(char *s)
 {
-   int len = strlen(s); // without copying the newline character
-   int i;
-   if (len >= STRMAX)
+   m_curLine.clear();
+   m_curLine = s;
+   if (m_curLine.size() >= STRMAX)
       fail("Input Line too long");
-   snprintf(input_line, len, "%s", s);
-   for (i = len - 1; input_line[i] == '\n' || input_line[i] == '\r'; i--)
-      input_line[i] = '\0'; /* Remove terminator */
+   for (size_t i = m_curLine.size() - 1; m_curLine[i] == '\n' || m_curLine[i] == '\r'; i--)
+      m_curLine[i] = '\0';
 }
 
 void YasLexer::add_instr(char *s)
@@ -333,7 +330,7 @@ void YasLexer::fail(const char *message)
    {
       fprintf(stderr, "Error on line %d: %s\n", yaslineno, message);
       fprintf(stderr, "Line %d, Byte 0x%.4x: %s\n",
-              yaslineno, bytepos, input_line);
+              yaslineno, bytepos, m_curLine.c_str());
    }
    error_mode = 1;
    hit_error = 1;
@@ -561,7 +558,7 @@ void YasLexer::print_code(FILE *out, int pos)
    }
    if (vcode)
    {
-      fprintf(out, "//%s%s\n", outstring, input_line);
+      fprintf(out, "//%s%s\n", outstring, m_curLine.c_str());
       if (tcount)
       {
          int i;
@@ -583,6 +580,6 @@ void YasLexer::print_code(FILE *out, int pos)
    }
    else
    {
-      fprintf(out, "%s%s\n", outstring, input_line);
+      fprintf(out, "%s%s\n", outstring, m_curLine.c_str());
    }
 }

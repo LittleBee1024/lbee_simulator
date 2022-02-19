@@ -57,5 +57,6 @@ private:
    FILE *m_in;
    FILE *m_out;
    int m_pass;
+   std::string m_curLine;
 };
 
