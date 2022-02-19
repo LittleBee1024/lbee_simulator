@@ -43,7 +43,7 @@ typedef int reg_id_t;
 // 	       REG_R12, REG_R13, REG_R14,  REG_NONE=0xF, REG_ERR } reg_id_t;
 
 /* Find register ID given its name */
-reg_id_t find_register(char *name);
+reg_id_t find_register(const char *name);
 /* Return name of register given its ID */
 const char *reg_name(reg_id_t id);
 
@@ -148,7 +148,7 @@ typedef struct
     int arg2hi; /* 0/1 */
 } instr_t, *instr_ptr;
 
-instr_ptr find_instr(char *name);
+instr_ptr find_instr(const char *name);
 
 /* Return invalid instruction for error handling purposes */
 instr_ptr bad_instr();

@@ -19,10 +19,6 @@ extern int yaslex(YasLexer *);
 
 namespace
 {
-   // Storage for strings in current line
-   char strbuf[STRMAX];
-   int strpos;
-
    // the number of m_tokens in this line
    int tcount;
    // What token am I currently processing
@@ -188,7 +184,7 @@ void YasLexer::finish_line()
       else
       {
          if (pass == 1)
-            add_symbol(m_tokens[0].sval, bytepos);
+            add_symbol(m_tokens[0].sval.c_str(), bytepos);
          tpos += 2;
          if (tcount == 2)
          {
@@ -208,7 +204,7 @@ void YasLexer::finish_line()
       return;
    }
    /* Process .pos */
-   if (strcmp(m_tokens[tpos].sval, ".pos") == 0)
+   if (strcmp(m_tokens[tpos].sval.c_str(), ".pos") == 0)
    {
       if (m_tokens[++tpos].type != TOK_NUM)
       {
@@ -225,7 +221,7 @@ void YasLexer::finish_line()
       return;
    }
    /* Process .align */
-   if (strcmp(m_tokens[tpos].sval, ".align") == 0)
+   if (strcmp(m_tokens[tpos].sval.c_str(), ".align") == 0)
    {
       int a;
       if (m_tokens[++tpos].type != TOK_NUM || (a = m_tokens[tpos].ival) <= 0)
@@ -244,7 +240,7 @@ void YasLexer::finish_line()
       return;
    }
    /* Get instruction size */
-   instr = find_instr(m_tokens[tpos++].sval);
+   instr = find_instr(m_tokens[tpos++].sval.c_str());
    if (instr == NULL)
    {
       fail("Invalid Instruction");
@@ -330,30 +326,16 @@ void YasLexer::start_line()
    tpos = 0;
    tcount = 0;
    bcount = 0;
-   strpos = 0;
    m_tokens.clear();
 }
 
 void YasLexer::add_token(token_t type, char *s, word_t i, char c)
 {
-   char *t = NULL;
    if (!tcount)
       start_line();
-   if (s)
-   {
-      int len = strlen(s) + 1;
-      if (strpos + len > STRMAX)
-      {
-         fail("Line too long");
-         return;
-      }
-      snprintf(strbuf + strpos, len, "%s", s);
-      t = strbuf + strpos;
-      strpos += len;
-   }
    token_rec token;
    token.type = type;
-   token.sval = t;
+   token.sval = s ? s : "";
    token.ival = i;
    token.cval = c;
    m_tokens.push_back(token);
@@ -372,7 +354,7 @@ void YasLexer::hexstuff(char *dest, word_t value, int len)
    }
 }
 
-void YasLexer::add_symbol(char *name, int p)
+void YasLexer::add_symbol(const char *name, int p)
 {
    size_t len = strlen(name) + 1;
    char *t = reinterpret_cast<char *>(malloc(len));
@@ -382,7 +364,7 @@ void YasLexer::add_symbol(char *name, int p)
    symbol_cnt++;
 }
 
-int YasLexer::find_symbol(char *name)
+int YasLexer::find_symbol(const char *name)
 {
    int i;
    for (i = 0; i < symbol_cnt; i++)
@@ -405,7 +387,7 @@ void YasLexer::get_reg(int codepos, int hi)
    }
    else
    {
-      rval = find_register(m_tokens[tpos].sval);
+      rval = find_register(m_tokens[tpos].sval.c_str());
    }
    /* Insert into output */
    c = code[codepos];
@@ -441,7 +423,7 @@ void YasLexer::get_mem(int codepos)
    }
    else if (type == TOK_IDENT)
    {
-      val = find_symbol(m_tokens[tpos++].sval);
+      val = find_symbol(m_tokens[tpos++].sval.c_str());
       type = m_tokens[tpos].type;
    }
    /* Check for optional register */
@@ -451,7 +433,7 @@ void YasLexer::get_mem(int codepos)
       {
          tpos++;
          if (m_tokens[tpos].type == TOK_REG)
-            rval = find_register(m_tokens[tpos++].sval);
+            rval = find_register(m_tokens[tpos++].sval.c_str());
          else
          {
             fail("Expecting Register Id");
@@ -482,7 +464,7 @@ void YasLexer::get_num(int codepos, int bytes, int offset)
    }
    else if (m_tokens[tpos].type == TOK_IDENT)
    {
-      val = find_symbol(m_tokens[tpos].sval);
+      val = find_symbol(m_tokens[tpos].sval.c_str());
    }
    else
    {

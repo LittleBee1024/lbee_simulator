@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-Wall -O1 -g
+CFLAGS=-Wall -g
 # http://dinosaur.compilertools.net/flex/manpage.html
 LEX=flex
 

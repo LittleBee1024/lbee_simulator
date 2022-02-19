@@ -21,7 +21,7 @@ typedef enum
 // Token representation
 typedef struct
 {
-   char *sval;   /* String    */
+   std::string sval;   /* String    */
    word_t ival;  /* Integer   */
    char cval;    /* Character */
    token_t type; /* Type    */
@@ -52,8 +52,8 @@ private:
    void start_line();
    void add_token(token_t type, char *s, word_t i, char c);
    void hexstuff(char *dest, word_t value, int len);
-   void add_symbol(char *name, int p);
-   int find_symbol(char *name);
+   void add_symbol(const char *name, int p);
+   int find_symbol(const char *name);
    void get_reg(int codepos, int hi);
    void get_mem(int codepos);
    void get_num(int codepos, int bytes, int offset);

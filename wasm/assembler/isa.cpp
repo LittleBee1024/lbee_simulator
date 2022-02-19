@@ -34,7 +34,7 @@ struct
         {"----", REG_NONE},
         {"----", REG_ERR}};
 
-reg_id_t find_register(char *name)
+reg_id_t find_register(const char *name)
 {
     int i;
     for (i = 0; i < REG_NONE; i++)
@@ -102,7 +102,7 @@ instr_t instruction_set[] = {
 instr_t invalid_instr =
     {"XXX", 0, 0, NO_ARG, 0, 0, NO_ARG, 0, 0};
 
-instr_ptr find_instr(char *name)
+instr_ptr find_instr(const char *name)
 {
     int i;
     for (i = 0; instruction_set[i].name; i++)
