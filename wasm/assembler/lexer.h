@@ -44,7 +44,7 @@ struct symbol_t
 class Context
 {
 public:
-   Context() : addr(0), m_lineno(0), m_hasError(false), tokenPos(0) {}
+   Context() : addr(0), tokenPos(0), m_lineno(0), m_hasError(false) {}
 
    void clear();
    void addToken(token_t type, const char *s, word_t i, char c);
@@ -54,13 +54,14 @@ public:
    void save_line(const char *s);
 
    int addr;
-   int m_lineno;
-   std::string m_line;
-
-   bool m_hasError;
    std::vector<token_rec> tokens;
    int tokenPos;
    std::vector<char> decodeBuf;
+
+private:
+   int m_lineno;
+   std::string m_line;
+   bool m_hasError;
 };
 
 class YasLexer
@@ -84,7 +85,6 @@ public:
    void finish_line();
 
 private:
-   void fail(const char *message);
    void start_line();
    void add_symbol(const char *name, int p);
    int find_symbol(const char *name);
