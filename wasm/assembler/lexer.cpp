@@ -275,11 +275,12 @@ void YasLexer::fail(const char *message)
          m_context.lineno, m_context.addr, m_context.line.c_str());
    }
    m_context.hasError = true;
-   m_hitError = 1;
 }
 
 void YasLexer::start_line()
 {
+   if (m_context.hasError)
+      m_hitError = 1;
    // clear current context to continue the next line
    m_context.clear();
 }
