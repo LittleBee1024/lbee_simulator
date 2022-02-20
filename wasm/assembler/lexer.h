@@ -55,10 +55,10 @@ class Context
 public:
    Context() : m_lineno(0), m_hasError(false), m_addr(0), m_tokenPos(0) {}
 
-   void clear();
    void fail(const char *message);
    void addSymbol(const char *name, int p);
    void addToken(token_t type, const char *s, word_t i, char c);
+   void resetLine();
 
    bool hasError() const;
    void print_code(FILE *out, int pos);

@@ -286,7 +286,7 @@ void YasLexer::start_line()
    if (m_context.hasError())
       m_hitError = 1;
    // clear current context to continue the next line
-   m_context.clear();
+   m_context.resetLine();
 }
 
 void Context::addSymbol(const char *name, int p)
@@ -414,7 +414,7 @@ void Context::get_num(int codepos, int bytes, int offset)
       decodeBuf[codepos + i] = (val >> (i * 8)) & 0xFF;
 }
 
-void Context::clear() {
+void Context::resetLine() {
    m_hasError = false;
    m_tokens.clear();
    m_tokenPos = 0;
