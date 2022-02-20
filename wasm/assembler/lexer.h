@@ -57,6 +57,17 @@ struct Context
       tokens.emplace_back(type, s, i, c);
    }
 
+   void fail(const char *message)
+   {
+      if (!hasError)
+      {
+         fprintf(stderr, "Error on line %d: %s\n", lineno, message);
+         fprintf(stderr, "Line %d, Byte 0x%.4x: %s\n",
+            lineno, addr, line.c_str());
+      }
+      hasError = true;
+   }
+
    int lineno;
    int addr;
    std::string line;

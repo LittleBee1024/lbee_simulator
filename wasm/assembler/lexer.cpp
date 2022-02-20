@@ -109,7 +109,7 @@ void YasLexer::add_ident(char *s)
 
 void YasLexer::error(const char *message)
 {
-   fail(message);
+   m_context.fail(message);
 }
 
 void YasLexer::finish_line()
@@ -135,7 +135,7 @@ void YasLexer::finish_line()
    {
       if (m_context.tokens[m_context.tokenPos+1].type != TOK_PUNCT || m_context.tokens[m_context.tokenPos+1].cval != ':')
       {
-         fail("Missing Colon");
+         m_context.fail("Missing Colon");
          start_line();
          return;
       }
@@ -157,7 +157,7 @@ void YasLexer::finish_line()
    /* Get instruction */
    if (m_context.tokens[m_context.tokenPos].type != TOK_INSTR)
    {
-      fail("Bad Instruction");
+      m_context.fail("Bad Instruction");
       start_line();
       return;
    }
@@ -166,7 +166,7 @@ void YasLexer::finish_line()
    {
       if (m_context.tokens[++m_context.tokenPos].type != TOK_NUM)
       {
-         fail("Invalid Address");
+         m_context.fail("Invalid Address");
          start_line();
          return;
       }
@@ -184,7 +184,7 @@ void YasLexer::finish_line()
       int a;
       if (m_context.tokens[++m_context.tokenPos].type != TOK_NUM || (a = m_context.tokens[m_context.tokenPos].ival) <= 0)
       {
-         fail("Invalid Alignment");
+         m_context.fail("Invalid Alignment");
          start_line();
          return;
       }
@@ -201,7 +201,7 @@ void YasLexer::finish_line()
    instr_ptr instr = find_instr(m_context.tokens[m_context.tokenPos++].sval.c_str());
    if (instr == NULL)
    {
-      fail("Invalid Instruction");
+      m_context.fail("Invalid Instruction");
       instr = bad_instr();
    }
    int size = instr->bytes;
@@ -238,7 +238,7 @@ void YasLexer::finish_line()
       /* Get comma  */
       if (m_context.tokens[m_context.tokenPos].type != TOK_PUNCT || m_context.tokens[m_context.tokenPos].cval != ',')
       {
-         fail("Expecting Comma");
+         m_context.fail("Expecting Comma");
          start_line();
          return;
       }
@@ -264,17 +264,6 @@ void YasLexer::finish_line()
 
    print_code(m_out, savedAddr);
    start_line();
-}
-
-void YasLexer::fail(const char *message)
-{
-   if (!m_context.hasError)
-   {
-      fprintf(stderr, "Error on line %d: %s\n", m_context.lineno, message);
-      fprintf(stderr, "Line %d, Byte 0x%.4x: %s\n",
-         m_context.lineno, m_context.addr, m_context.line.c_str());
-   }
-   m_context.hasError = true;
 }
 
 void YasLexer::start_line()
@@ -309,7 +298,7 @@ int YasLexer::find_symbol(const char *name)
       if (s.name.compare(name) == 0)
          return s.pos;
    }
-   fail("Can't find label");
+   m_context.fail("Can't find label");
    return -1;
 }
 
@@ -321,7 +310,7 @@ void YasLexer::get_reg(int codepos, int hi)
    char c;
    if (m_context.tokens[m_context.tokenPos].type != TOK_REG)
    {
-      fail("Expecting Register ID");
+      m_context.fail("Expecting Register ID");
       return;
    }
    else
@@ -375,12 +364,12 @@ void YasLexer::get_mem(int codepos)
             rval = find_register(m_context.tokens[m_context.tokenPos++].sval.c_str());
          else
          {
-            fail("Expecting Register Id");
+            m_context.fail("Expecting Register Id");
             return;
          }
          if (m_context.tokens[m_context.tokenPos].type != TOK_PUNCT || m_context.tokens[m_context.tokenPos++].cval != ')')
          {
-            fail("Expecting ')'");
+            m_context.fail("Expecting ')'");
             return;
          }
       }
@@ -407,7 +396,7 @@ void YasLexer::get_num(int codepos, int bytes, int offset)
    }
    else
    {
-      fail("Number Expected");
+      m_context.fail("Number Expected");
       return;
    }
    val -= offset;
@@ -430,7 +419,7 @@ void YasLexer::print_code(FILE *out, int pos)
       {
          if (pos > 0xFFFF)
          {
-            fail("Code address limit exceeded");
+            m_context.fail("Code address limit exceeded");
             exit(1);
          }
          snprintf(outstring, sizeof(outstring), "0x0000:                      | ");
@@ -447,7 +436,7 @@ void YasLexer::print_code(FILE *out, int pos)
       {
          if (pos > 0xFFF)
          {
-            fail("Code address limit exceeded");
+            m_context.fail("Code address limit exceeded");
             exit(1);
          }
          snprintf(outstring, sizeof(outstring), "0x000:                      | ");
