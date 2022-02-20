@@ -81,11 +81,6 @@ std::string YasLexer::parse()
    return "";
 }
 
-void YasLexer::increase_line_num()
-{
-   m_context.lineno++;
-}
-
 void YasLexer::resetYasIn()
 {
    fseek(m_in, 0, SEEK_SET);
@@ -449,15 +444,16 @@ void Context::print_code(FILE *out, int pos)
       else
          snprintf(outstring, sizeof(outstring), "                            | ");
    }
-   fprintf(out, "%s%s\n", outstring, line.c_str());
+   fprintf(out, "%s%s\n", outstring, m_line.c_str());
 }
 
 void Context::save_line(const char *s)
 {
    assert(s);
-   line = s;
-   for (size_t i = line.size() - 1; line[i] == '\n' || line[i] == '\r'; i--)
-      line[i] = '\0';
+   m_line = s;
+   for (size_t i = m_line.size() - 1; m_line[i] == '\n' || m_line[i] == '\r'; i--)
+      m_line[i] = '\0';
+   m_lineno++;
 }
 
 bool Context::hasError() const
@@ -469,9 +465,9 @@ void Context::fail(const char *message)
 {
    if (!m_hasError)
    {
-      fprintf(stderr, "Error on line %d: %s\n", lineno, message);
+      fprintf(stderr, "Error on line %d: %s\n", m_lineno, message);
       fprintf(stderr, "Line %d, Byte 0x%.4x: %s\n",
-         lineno, addr, line.c_str());
+         m_lineno, addr, m_line.c_str());
    }
    m_hasError = true;
 }

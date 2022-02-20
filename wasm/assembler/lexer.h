@@ -44,7 +44,7 @@ struct symbol_t
 class Context
 {
 public:
-   Context() : lineno(0), addr(0), m_hasError(false), tokenPos(0) {}
+   Context() : addr(0), m_lineno(0), m_hasError(false), tokenPos(0) {}
 
    void clear() {
       m_hasError = false;
@@ -63,9 +63,9 @@ public:
    void print_code(FILE *out, int pos);
    void save_line(const char *s);
 
-   int lineno;
    int addr;
-   std::string line;
+   int m_lineno;
+   std::string m_line;
 
    bool m_hasError;
    std::vector<token_rec> tokens;
@@ -92,7 +92,6 @@ public:
    void add_ident(char *);
    void error(const char *);
    void finish_line();
-   void increase_line_num();
 
 private:
    void fail(const char *message);

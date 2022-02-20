@@ -24,10 +24,10 @@ Reg           %rax|%rcx|%rdx|%rbx|%rsi|%rdi|%rsp|%rbp|%r8|%r9|%r10|%r11|%r12|%r1
 %%
 
 ^{Char}*{Return}*{Newline}      {lexer->save_line(yytext); REJECT;} /* Snarf input line */
-#{Char}*{Return}*{Newline}      {lexer->finish_line(); lexer->increase_line_num();}
-"//"{Char}*{Return}*{Newline}   {lexer->finish_line(); lexer->increase_line_num();}
-"/*"{Char}*{Return}*{Newline}   {lexer->finish_line(); lexer->increase_line_num();}
-{Blank}*{Return}*{Newline}      {lexer->finish_line(); lexer->increase_line_num();}
+#{Char}*{Return}*{Newline}      {lexer->finish_line();}
+"//"{Char}*{Return}*{Newline}   {lexer->finish_line();}
+"/*"{Char}*{Return}*{Newline}   {lexer->finish_line();}
+{Blank}*{Return}*{Newline}      {lexer->finish_line();}
 
 {Blank}+                        ;
 "$"+                            ;
@@ -38,5 +38,5 @@ Reg           %rax|%rcx|%rdx|%rbx|%rsi|%rdi|%rsp|%rbp|%r8|%r9|%r10|%r11|%r12|%r1
 [():,]                          lexer->add_punct(*yytext);
 {Ident}                         lexer->add_ident(yytext);
 {Char}                          {; BEGIN ERR;}
-<ERR>{Char}*{Newline}           {lexer->error("Invalid line"); lexer->increase_line_num(); BEGIN 0;}
+<ERR>{Char}*{Newline}           {lexer->error("Invalid line"); BEGIN 0;}
 %%
