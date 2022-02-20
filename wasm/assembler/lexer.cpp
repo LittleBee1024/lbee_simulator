@@ -401,6 +401,19 @@ void YasLexer::get_num(int codepos, int bytes, int offset)
       m_context.decodeBuf[codepos + i] = (val >> (i * 8)) & 0xFF;
    m_context.tokenPos++;
 }
+
+void Context::clear() {
+   m_hasError = false;
+   tokens.clear();
+   tokenPos = 0;
+   decodeBuf.clear();
+}
+
+void Context::addToken(token_t type, const char *s, word_t i, char c)
+{
+   tokens.emplace_back(type, s, i, c);
+}
+
 /**
  * Printing format:
  *  0xHHHH: cccccccccccccccccccc | <line>

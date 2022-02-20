@@ -46,18 +46,8 @@ class Context
 public:
    Context() : addr(0), m_lineno(0), m_hasError(false), tokenPos(0) {}
 
-   void clear() {
-      m_hasError = false;
-      tokens.clear();
-      tokenPos = 0;
-      decodeBuf.clear();
-   }
-
-   void addToken(token_t type, const char *s, word_t i, char c)
-   {
-      tokens.emplace_back(type, s, i, c);
-   }
-
+   void clear();
+   void addToken(token_t type, const char *s, word_t i, char c);
    void fail(const char *message);
    bool hasError() const;
    void print_code(FILE *out, int pos);
