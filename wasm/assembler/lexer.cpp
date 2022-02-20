@@ -123,11 +123,10 @@ void YasLexer::error(const char *message)
 
 void YasLexer::finish_line()
 {
-   int savedAddr = m_context.addr;
    if (m_context.tokens.empty())
    {
       if (m_pass > 1)
-         m_context.print_code(m_out, savedAddr);
+         m_context.print_code(m_out, m_context.addr);
       start_line();
       return; /* Empty line */
    }
@@ -157,7 +156,7 @@ void YasLexer::finish_line()
          {
             /* That's all for this line */
             if (m_pass > 1)
-               m_context.print_code(m_out, savedAddr);
+               m_context.print_code(m_out, m_context.addr);
             start_line();
             return;
          }
@@ -214,8 +213,8 @@ void YasLexer::finish_line()
       instr = bad_instr();
    }
    int size = instr->bytes;
+   int instr_addr = m_context.addr;
    m_context.addr += size;
-   m_context.decodeBuf.resize(size, 0);
 
    /* If this is m_pass 1, then we're done */
    if (m_pass == 1)
@@ -225,6 +224,7 @@ void YasLexer::finish_line()
    }
 
    /* Here's where we really process the instructions */
+   m_context.decodeBuf.resize(size, 0);
    m_context.decodeBuf[0] = instr->code;
    m_context.decodeBuf[1] = HPACK(REG_NONE, REG_NONE);
    switch (instr->arg1)
@@ -271,7 +271,7 @@ void YasLexer::finish_line()
       }
    }
 
-   m_context.print_code(m_out, savedAddr);
+   m_context.print_code(m_out, instr_addr);
    start_line();
 }
 
