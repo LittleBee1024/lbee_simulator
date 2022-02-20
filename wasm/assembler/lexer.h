@@ -62,16 +62,21 @@ public:
    void loadLine(const char *s);
 
    bool hasError() const;
-   void print_code(FILE *out, int pos);
+   bool done() const;
+
    token_rec getCurToken() const;
    void popToken();
-   bool done() const;
+
    int getAddress() const;
    void setAddress(int a);
+
    void get_reg(int codepos, int hi);
    void get_mem(int codepos);
    void get_num(int codepos, int bytes, int offset);
+
    void initDecodeBuf(int instrSize, uint8_t code);
+
+   void print_code(FILE *out, int pos);
 
 private:
    int findSymbol(const char *name);
@@ -96,13 +101,15 @@ public:
 
 public:
    void loadLine(const char *);
+   void processTokens();
+   void error(const char *);
+
+   // add different tokens
    void addInstr(char *);
    void addReg(char *);
    void addNum(int64_t);
    void addPunct(char);
    void addIdent(char *);
-   void error(const char *);
-   void processTokens();
 
 private:
    void resetLine();
