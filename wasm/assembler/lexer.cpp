@@ -152,7 +152,7 @@ void YasLexer::finish_line()
       }
 
       if (m_pass == 1)
-         m_context.add_symbol(labelToken.sval.c_str(), m_context.getAddress());
+         m_context.addSymbol(labelToken.sval.c_str(), m_context.getAddress());
       m_context.popToken();
       if (m_context.done())
       {
@@ -289,20 +289,22 @@ void YasLexer::start_line()
    m_context.clear();
 }
 
-void Context::add_symbol(const char *name, int p)
+void Context::addSymbol(const char *name, int p)
 {
-   m_symbols.emplace_back(name, p);
+   m_symbols.emplace(name, p);
 }
 
-int Context::find_symbol(const char *name)
+int Context::findSymbol(const char *name)
 {
-   for (const auto &s : m_symbols)
+   auto iter = m_symbols.find(name);
+   if (iter == m_symbols.end())
    {
-      if (s.name.compare(name) == 0)
-         return s.pos;
+      std::string msg = "Fail to find label: " + std::string(name);
+      fail(msg.c_str());
+      return -1;
    }
-   fail("Can't find label");
-   return -1;
+
+   return iter->second;
 }
 
 /* Parse Register from set of m_context.tokens and put into high or low
@@ -354,7 +356,7 @@ void Context::get_mem(int codepos)
    }
    else if (type == TOK_IDENT)
    {
-      val = find_symbol(getCurToken().sval.c_str());
+      val = findSymbol(getCurToken().sval.c_str());
       popToken();
       type = getCurToken().type;
    }
@@ -398,7 +400,7 @@ void Context::get_num(int codepos, int bytes, int offset)
    }
    else if (getCurToken().type == TOK_IDENT)
    {
-      val = find_symbol(getCurToken().sval.c_str());
+      val = findSymbol(getCurToken().sval.c_str());
    }
    else
    {

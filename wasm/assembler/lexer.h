@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 typedef enum
 {
@@ -55,8 +56,10 @@ public:
    Context() : m_lineno(0), m_hasError(false), m_addr(0), m_tokenPos(0) {}
 
    void clear();
-   void addToken(token_t type, const char *s, word_t i, char c);
    void fail(const char *message);
+   void addSymbol(const char *name, int p);
+   void addToken(token_t type, const char *s, word_t i, char c);
+
    bool hasError() const;
    void print_code(FILE *out, int pos);
    void save_line(const char *s);
@@ -65,17 +68,16 @@ public:
    bool done() const;
    int getAddress() const;
    void setAddress(int a);
-   void add_symbol(const char *name, int p);
    void get_reg(int codepos, int hi);
    void get_mem(int codepos);
    void get_num(int codepos, int bytes, int offset);
    void initDecodeBuf(int instrSize, uint8_t code);
 
 private:
-   int find_symbol(const char *name);
+   int findSymbol(const char *name);
 
 private:
-   std::vector<symbol_t> m_symbols;
+   std::unordered_map<std::string, int> m_symbols;
    int m_lineno;
    std::string m_line;
    bool m_hasError;
