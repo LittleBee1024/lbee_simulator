@@ -16,8 +16,7 @@ extern int yaslex(YasLexer *);
 YasLexer::YasLexer(const char *inFilename) : m_in(nullptr),
                                              m_out(nullptr),
                                              m_pass(0),
-                                             m_hitError(0),
-                                             m_tokenPos(0)
+                                             m_hitError(0)
 {
    m_in = fopen(inFilename, "r");
    if (!m_in)
@@ -85,27 +84,27 @@ void YasLexer::save_line(const char *s)
 
 void YasLexer::add_instr(char *s)
 {
-   add_token(TOK_INSTR, s, 0, ' ');
+   m_context.addToken(TOK_INSTR, s, 0, ' ');
 }
 
 void YasLexer::add_reg(char *s)
 {
-   add_token(TOK_REG, s, 0, ' ');
+   m_context.addToken(TOK_REG, s, 0, ' ');
 }
 
 void YasLexer::add_num(int64_t i)
 {
-   add_token(TOK_NUM, NULL, i, ' ');
+   m_context.addToken(TOK_NUM, NULL, i, ' ');
 }
 
 void YasLexer::add_punct(char c)
 {
-   add_token(TOK_PUNCT, NULL, 0, c);
+   m_context.addToken(TOK_PUNCT, NULL, 0, c);
 }
 
 void YasLexer::add_ident(char *s)
 {
-   add_token(TOK_IDENT, s, 0, ' ');
+   m_context.addToken(TOK_IDENT, s, 0, ' ');
 }
 
 void YasLexer::error(const char *message)
@@ -115,11 +114,8 @@ void YasLexer::error(const char *message)
 
 void YasLexer::finish_line()
 {
-   int size;
-   instr_ptr instr;
    int savedAddr = m_context.addr;
-   m_tokenPos = 0;
-   if (m_tokens.empty())
+   if (m_context.tokens.empty())
    {
       if (m_pass > 1)
          print_code(m_out, savedAddr);
@@ -133,10 +129,11 @@ void YasLexer::finish_line()
       return;
    }
 
+   assert(m_context.tokenPos == 0);
    /* See if this is a labeled line */
-   if (m_tokens[0].type == TOK_IDENT)
+   if (m_context.tokens[m_context.tokenPos].type == TOK_IDENT)
    {
-      if (m_tokens[1].type != TOK_PUNCT || m_tokens[1].cval != ':')
+      if (m_context.tokens[m_context.tokenPos+1].type != TOK_PUNCT || m_context.tokens[m_context.tokenPos+1].cval != ':')
       {
          fail("Missing Colon");
          start_line();
@@ -145,9 +142,9 @@ void YasLexer::finish_line()
       else
       {
          if (m_pass == 1)
-            add_symbol(m_tokens[0].sval.c_str(), m_context.addr);
-         m_tokenPos += 2;
-         if (m_tokens.size() == 2)
+            add_symbol(m_context.tokens[m_context.tokenPos].sval.c_str(), m_context.addr);
+         m_context.tokenPos += 2;
+         if (m_context.tokens.size() == 2)
          {
             /* That's all for this line */
             if (m_pass > 1)
@@ -158,22 +155,22 @@ void YasLexer::finish_line()
       }
    }
    /* Get instruction */
-   if (m_tokens[m_tokenPos].type != TOK_INSTR)
+   if (m_context.tokens[m_context.tokenPos].type != TOK_INSTR)
    {
       fail("Bad Instruction");
       start_line();
       return;
    }
    /* Process .pos */
-   if (strcmp(m_tokens[m_tokenPos].sval.c_str(), ".pos") == 0)
+   if (strcmp(m_context.tokens[m_context.tokenPos].sval.c_str(), ".pos") == 0)
    {
-      if (m_tokens[++m_tokenPos].type != TOK_NUM)
+      if (m_context.tokens[++m_context.tokenPos].type != TOK_NUM)
       {
          fail("Invalid Address");
          start_line();
          return;
       }
-      m_context.addr = m_tokens[m_tokenPos].ival;
+      m_context.addr = m_context.tokens[m_context.tokenPos].ival;
       if (m_pass > 1)
       {
          print_code(m_out, m_context.addr);
@@ -182,10 +179,10 @@ void YasLexer::finish_line()
       return;
    }
    /* Process .align */
-   if (strcmp(m_tokens[m_tokenPos].sval.c_str(), ".align") == 0)
+   if (strcmp(m_context.tokens[m_context.tokenPos].sval.c_str(), ".align") == 0)
    {
       int a;
-      if (m_tokens[++m_tokenPos].type != TOK_NUM || (a = m_tokens[m_tokenPos].ival) <= 0)
+      if (m_context.tokens[++m_context.tokenPos].type != TOK_NUM || (a = m_context.tokens[m_context.tokenPos].ival) <= 0)
       {
          fail("Invalid Alignment");
          start_line();
@@ -201,13 +198,13 @@ void YasLexer::finish_line()
       return;
    }
    /* Get instruction size */
-   instr = find_instr(m_tokens[m_tokenPos++].sval.c_str());
+   instr_ptr instr = find_instr(m_context.tokens[m_context.tokenPos++].sval.c_str());
    if (instr == NULL)
    {
       fail("Invalid Instruction");
       instr = bad_instr();
    }
-   size = instr->bytes;
+   int size = instr->bytes;
    m_context.addr += size;
    m_context.decodeBuf.resize(size, 0);
 
@@ -239,13 +236,13 @@ void YasLexer::finish_line()
    if (instr->arg2 != NO_ARG)
    {
       /* Get comma  */
-      if (m_tokens[m_tokenPos].type != TOK_PUNCT || m_tokens[m_tokenPos].cval != ',')
+      if (m_context.tokens[m_context.tokenPos].type != TOK_PUNCT || m_context.tokens[m_context.tokenPos].cval != ',')
       {
          fail("Expecting Comma");
          start_line();
          return;
       }
-      m_tokenPos++;
+      m_context.tokenPos++;
 
       /* Get second argument */
       switch (instr->arg2)
@@ -285,20 +282,6 @@ void YasLexer::start_line()
 {
    // clear current context to continue the next line
    m_context.clear();
-   m_tokenPos = 0;
-   m_tokens.clear();
-}
-
-void YasLexer::add_token(token_t type, char *s, word_t i, char c)
-{
-   if (m_tokens.empty())
-      start_line();
-   token_rec token;
-   token.type = type;
-   token.sval = s ? s : "";
-   token.ival = i;
-   token.cval = c;
-   m_tokens.push_back(token);
 }
 
 void YasLexer::hexstuff(char *dest, word_t value, int len)
@@ -329,20 +312,20 @@ int YasLexer::find_symbol(const char *name)
    return -1;
 }
 
-/* Parse Register from set of m_tokens and put into high or low
+/* Parse Register from set of m_context.tokens and put into high or low
    4 bits of code[codepos] */
 void YasLexer::get_reg(int codepos, int hi)
 {
    int rval = REG_NONE;
    char c;
-   if (m_tokens[m_tokenPos].type != TOK_REG)
+   if (m_context.tokens[m_context.tokenPos].type != TOK_REG)
    {
       fail("Expecting Register ID");
       return;
    }
    else
    {
-      rval = find_register(m_tokens[m_tokenPos].sval.c_str());
+      rval = find_register(m_context.tokens[m_context.tokenPos].sval.c_str());
    }
    /* Insert into output */
    c = m_context.decodeBuf[codepos];
@@ -351,7 +334,7 @@ void YasLexer::get_reg(int codepos, int hi)
    else
       c = (c & 0xF0) | rval;
    m_context.decodeBuf[codepos] = c;
-   m_tokenPos++;
+   m_context.tokenPos++;
 }
 
 /* Get memory reference.
@@ -369,32 +352,32 @@ void YasLexer::get_mem(int codepos)
    word_t val = 0;
    int i;
    char c;
-   token_t type = m_tokens[m_tokenPos].type;
+   token_t type = m_context.tokens[m_context.tokenPos].type;
    /* Deal with optional displacement */
    if (type == TOK_NUM)
    {
-      val = m_tokens[m_tokenPos++].ival;
-      type = m_tokens[m_tokenPos].type;
+      val = m_context.tokens[m_context.tokenPos++].ival;
+      type = m_context.tokens[m_context.tokenPos].type;
    }
    else if (type == TOK_IDENT)
    {
-      val = find_symbol(m_tokens[m_tokenPos++].sval.c_str());
-      type = m_tokens[m_tokenPos].type;
+      val = find_symbol(m_context.tokens[m_context.tokenPos++].sval.c_str());
+      type = m_context.tokens[m_context.tokenPos].type;
    }
    /* Check for optional register */
    if (type == TOK_PUNCT)
    {
-      if (m_tokens[m_tokenPos].cval == '(')
+      if (m_context.tokens[m_context.tokenPos].cval == '(')
       {
-         m_tokenPos++;
-         if (m_tokens[m_tokenPos].type == TOK_REG)
-            rval = find_register(m_tokens[m_tokenPos++].sval.c_str());
+         m_context.tokenPos++;
+         if (m_context.tokens[m_context.tokenPos].type == TOK_REG)
+            rval = find_register(m_context.tokens[m_context.tokenPos++].sval.c_str());
          else
          {
             fail("Expecting Register Id");
             return;
          }
-         if (m_tokens[m_tokenPos].type != TOK_PUNCT || m_tokens[m_tokenPos++].cval != ')')
+         if (m_context.tokens[m_context.tokenPos].type != TOK_PUNCT || m_context.tokens[m_context.tokenPos++].cval != ')')
          {
             fail("Expecting ')'");
             return;
@@ -413,13 +396,13 @@ void YasLexer::get_num(int codepos, int bytes, int offset)
 {
    word_t val = 0;
    int i;
-   if (m_tokens[m_tokenPos].type == TOK_NUM)
+   if (m_context.tokens[m_context.tokenPos].type == TOK_NUM)
    {
-      val = m_tokens[m_tokenPos].ival;
+      val = m_context.tokens[m_context.tokenPos].ival;
    }
-   else if (m_tokens[m_tokenPos].type == TOK_IDENT)
+   else if (m_context.tokens[m_context.tokenPos].type == TOK_IDENT)
    {
-      val = find_symbol(m_tokens[m_tokenPos].sval.c_str());
+      val = find_symbol(m_context.tokens[m_context.tokenPos].sval.c_str());
    }
    else
    {
@@ -429,7 +412,7 @@ void YasLexer::get_num(int codepos, int bytes, int offset)
    val -= offset;
    for (i = 0; i < bytes; i++)
       m_context.decodeBuf[codepos + i] = (val >> (i * 8)) & 0xFF;
-   m_tokenPos++;
+   m_context.tokenPos++;
 }
 /**
  * Printing format:
@@ -442,7 +425,7 @@ void YasLexer::print_code(FILE *out, int pos)
    char outstring[33];
    if (pos > 0xFFF)
    {
-      if (m_tokens.size())
+      if (m_context.tokens.size())
       {
          if (pos > 0xFFFF)
          {
@@ -459,7 +442,7 @@ void YasLexer::print_code(FILE *out, int pos)
    }
    else
    {
-      if (m_tokens.size())
+      if (m_context.tokens.size())
       {
          if (pos > 0xFFF)
          {

@@ -19,13 +19,19 @@ typedef enum
 } token_t;
 
 // Token representation
-typedef struct
+struct token_rec
 {
-   std::string sval; /* String    */
-   word_t ival;      /* Integer   */
-   char cval;        /* Character */
-   token_t type;     /* Type    */
-} token_rec, *token_ptr;
+   token_rec(token_t t, const char *s, word_t i, char c):
+      type(t),
+      sval(s ? s : ""),
+      ival(i),
+      cval(c)
+   {}
+   token_t type;
+   std::string sval;
+   word_t ival;
+   char cval;
+};
 
 struct symbol_t
 {
@@ -44,6 +50,11 @@ struct Context
       tokens.clear();
       tokenPos = 0;
       decodeBuf.clear();
+   }
+
+   void addToken(token_t type, const char *s, word_t i, char c)
+   {
+      tokens.emplace_back(type, s, i, c);
    }
 
    int lineno;
@@ -80,7 +91,6 @@ public:
 private:
    void fail(const char *message);
    void start_line();
-   void add_token(token_t type, char *s, word_t i, char c);
    void hexstuff(char *dest, word_t value, int len);
    void add_symbol(const char *name, int p);
    int find_symbol(const char *name);
@@ -104,9 +114,4 @@ private:
    int m_hitError;
    // current processing data
    Context m_context;
-
-   // tokens in current line
-   std::vector<token_rec> m_tokens;
-   // current process token position
-   int m_tokenPos;
 };
