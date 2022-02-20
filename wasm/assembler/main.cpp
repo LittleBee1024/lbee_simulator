@@ -1,7 +1,6 @@
 #include "lexer.h"
 
 #include <exception>
-#include <iostream>
 #include <stdio.h>
 #include <string>
 
@@ -27,12 +26,12 @@ static int parseFromFile(const char *infname, const char *outfname)
    }
    catch (const std::exception &e)
    {
-      std::cerr << e.what() << std::endl;
+      fprintf(stderr, "%s\n", e.what());
       return -1;
    }
    catch (...)
    {
-      std::cerr << "Unknow error happens" << std::endl;
+      fprintf(stderr, "Unknow error happens\n");
       return -1;
    }
 
