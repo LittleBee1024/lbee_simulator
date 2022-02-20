@@ -123,108 +123,116 @@ void YasLexer::error(const char *message)
 
 void YasLexer::finish_line()
 {
-   if (m_context.tokens.empty())
+   // Empty line, to start next line
+   if (m_context.done())
    {
       if (m_pass > 1)
-         m_context.print_code(m_out, m_context.addr);
+         m_context.print_code(m_out, m_context.getAddress());
       start_line();
-      return; /* Empty line */
+      return;
    }
-   /* Completion of an erroneous line */
+
+   // error happened, to start next line
    if (m_context.hasError())
    {
       start_line();
       return;
    }
 
-   assert(m_context.tokenPos == 0);
-   /* See if this is a labeled line */
-   if (m_context.tokens[m_context.tokenPos].type == TOK_IDENT)
+   // process label, to start next line if the line only has label
+   if (m_context.getCurToken().type == TOK_IDENT)
    {
-      if (m_context.tokens[m_context.tokenPos+1].type != TOK_PUNCT || m_context.tokens[m_context.tokenPos+1].cval != ':')
+      token_rec labelToken = m_context.getCurToken();
+      m_context.popToken();
+      if (m_context.getCurToken().type != TOK_PUNCT || m_context.getCurToken().cval != ':')
       {
          m_context.fail("Missing Colon");
          start_line();
          return;
       }
-      else
+
+      if (m_pass == 1)
+         add_symbol(labelToken.sval.c_str(), m_context.getAddress());
+      m_context.popToken();
+      if (m_context.done())
       {
-         if (m_pass == 1)
-            add_symbol(m_context.tokens[m_context.tokenPos].sval.c_str(), m_context.addr);
-         m_context.tokenPos += 2;
-         if (m_context.tokens.size() == 2)
-         {
-            /* That's all for this line */
-            if (m_pass > 1)
-               m_context.print_code(m_out, m_context.addr);
-            start_line();
-            return;
-         }
+         if (m_pass > 1)
+            m_context.print_code(m_out, m_context.getAddress());
+         start_line();
+         return;
       }
    }
-   /* Get instruction */
-   if (m_context.tokens[m_context.tokenPos].type != TOK_INSTR)
+
+   // it should be instruction if the token is not label
+   if (m_context.getCurToken().type != TOK_INSTR)
    {
       m_context.fail("Bad Instruction");
       start_line();
       return;
    }
-   /* Process .pos */
-   if (strcmp(m_context.tokens[m_context.tokenPos].sval.c_str(), ".pos") == 0)
+
+   // process .pos instruction
+   if (strcmp(m_context.getCurToken().sval.c_str(), ".pos") == 0)
    {
-      if (m_context.tokens[++m_context.tokenPos].type != TOK_NUM)
+      m_context.popToken();
+      if (m_context.getCurToken().type != TOK_NUM)
       {
          m_context.fail("Invalid Address");
          start_line();
          return;
       }
-      m_context.addr = m_context.tokens[m_context.tokenPos].ival;
+
+      m_context.setAddress(m_context.getCurToken().ival);
       if (m_pass > 1)
       {
-         m_context.print_code(m_out, m_context.addr);
+         m_context.print_code(m_out, m_context.getAddress());
       }
       start_line();
       return;
    }
-   /* Process .align */
-   if (strcmp(m_context.tokens[m_context.tokenPos].sval.c_str(), ".align") == 0)
+
+   // process .align instruction
+   if (strcmp(m_context.getCurToken().sval.c_str(), ".align") == 0)
    {
       int a;
-      if (m_context.tokens[++m_context.tokenPos].type != TOK_NUM || (a = m_context.tokens[m_context.tokenPos].ival) <= 0)
+      m_context.popToken();
+      if (m_context.getCurToken().type != TOK_NUM || (a = m_context.getCurToken().ival) <= 0)
       {
          m_context.fail("Invalid Alignment");
          start_line();
          return;
       }
-      m_context.addr = ((m_context.addr + a - 1) / a) * a;
+      m_context.setAddress(((m_context.getAddress() + a - 1) / a) * a);
 
       if (m_pass > 1)
       {
-         m_context.print_code(m_out, m_context.addr);
+         m_context.print_code(m_out, m_context.getAddress());
       }
       start_line();
       return;
    }
-   /* Get instruction size */
-   instr_ptr instr = find_instr(m_context.tokens[m_context.tokenPos++].sval.c_str());
+
+   // process normal instruction for its size
+   instr_ptr instr = find_instr(m_context.getCurToken().sval.c_str());
    if (instr == NULL)
    {
       m_context.fail("Invalid Instruction");
       instr = bad_instr();
    }
-   int size = instr->bytes;
-   int instr_addr = m_context.addr;
-   m_context.addr += size;
+   int instrSize = instr->bytes;
+   int instrAddr = m_context.getAddress();
+   m_context.setAddress(m_context.getAddress() + instrSize);
 
-   /* If this is m_pass 1, then we're done */
+   // don't process instruction in pass 1
    if (m_pass == 1)
    {
       start_line();
       return;
    }
 
-   /* Here's where we really process the instructions */
-   m_context.decodeBuf.resize(size, 0);
+   // process the instructions
+   m_context.popToken();
+   m_context.decodeBuf.resize(instrSize, 0);
    m_context.decodeBuf[0] = instr->code;
    m_context.decodeBuf[1] = HPACK(REG_NONE, REG_NONE);
    switch (instr->arg1)
@@ -245,13 +253,13 @@ void YasLexer::finish_line()
    if (instr->arg2 != NO_ARG)
    {
       /* Get comma  */
-      if (m_context.tokens[m_context.tokenPos].type != TOK_PUNCT || m_context.tokens[m_context.tokenPos].cval != ',')
+      if (m_context.getCurToken().type != TOK_PUNCT || m_context.getCurToken().cval != ',')
       {
          m_context.fail("Expecting Comma");
          start_line();
          return;
       }
-      m_context.tokenPos++;
+      m_context.popToken();
 
       /* Get second argument */
       switch (instr->arg2)
@@ -271,7 +279,7 @@ void YasLexer::finish_line()
       }
    }
 
-   m_context.print_code(m_out, instr_addr);
+   m_context.print_code(m_out, instrAddr);
    start_line();
 }
 
@@ -305,15 +313,15 @@ void YasLexer::get_reg(int codepos, int hi)
 {
    int rval = REG_NONE;
    char c;
-   if (m_context.tokens[m_context.tokenPos].type != TOK_REG)
+   if (m_context.getCurToken().type != TOK_REG)
    {
       m_context.fail("Expecting Register ID");
       return;
    }
-   else
-   {
-      rval = find_register(m_context.tokens[m_context.tokenPos].sval.c_str());
-   }
+
+   rval = find_register(m_context.getCurToken().sval.c_str());
+   m_context.popToken();
+
    /* Insert into output */
    c = m_context.decodeBuf[codepos];
    if (hi)
@@ -321,7 +329,6 @@ void YasLexer::get_reg(int codepos, int hi)
    else
       c = (c & 0xF0) | rval;
    m_context.decodeBuf[codepos] = c;
-   m_context.tokenPos++;
 }
 
 /* Get memory reference.
@@ -339,36 +346,40 @@ void YasLexer::get_mem(int codepos)
    word_t val = 0;
    int i;
    char c;
-   token_t type = m_context.tokens[m_context.tokenPos].type;
+   token_t type = m_context.getCurToken().type;
    /* Deal with optional displacement */
    if (type == TOK_NUM)
    {
-      val = m_context.tokens[m_context.tokenPos++].ival;
-      type = m_context.tokens[m_context.tokenPos].type;
+      m_context.popToken();
+      val = m_context.getCurToken().ival;
+      type = m_context.getCurToken().type;
    }
    else if (type == TOK_IDENT)
    {
-      val = find_symbol(m_context.tokens[m_context.tokenPos++].sval.c_str());
-      type = m_context.tokens[m_context.tokenPos].type;
+      val = find_symbol(m_context.getCurToken().sval.c_str());
+      m_context.popToken();
+      type = m_context.getCurToken().type;
    }
    /* Check for optional register */
    if (type == TOK_PUNCT)
    {
-      if (m_context.tokens[m_context.tokenPos].cval == '(')
+      if (m_context.getCurToken().cval == '(')
       {
-         m_context.tokenPos++;
-         if (m_context.tokens[m_context.tokenPos].type == TOK_REG)
-            rval = find_register(m_context.tokens[m_context.tokenPos++].sval.c_str());
-         else
+         m_context.popToken();
+         if (m_context.getCurToken().type != TOK_REG)
          {
             m_context.fail("Expecting Register Id");
             return;
          }
-         if (m_context.tokens[m_context.tokenPos].type != TOK_PUNCT || m_context.tokens[m_context.tokenPos++].cval != ')')
+
+         rval = find_register(m_context.getCurToken().sval.c_str());
+         m_context.popToken();
+         if (m_context.getCurToken().type != TOK_PUNCT || m_context.getCurToken().cval != ')')
          {
             m_context.fail("Expecting ')'");
             return;
          }
+         m_context.popToken();
       }
    }
    c = (m_context.decodeBuf[codepos] & 0xF0) | (rval & 0xF);
@@ -383,35 +394,36 @@ void YasLexer::get_num(int codepos, int bytes, int offset)
 {
    word_t val = 0;
    int i;
-   if (m_context.tokens[m_context.tokenPos].type == TOK_NUM)
+   if (m_context.getCurToken().type == TOK_NUM)
    {
-      val = m_context.tokens[m_context.tokenPos].ival;
+      val = m_context.getCurToken().ival;
    }
-   else if (m_context.tokens[m_context.tokenPos].type == TOK_IDENT)
+   else if (m_context.getCurToken().type == TOK_IDENT)
    {
-      val = find_symbol(m_context.tokens[m_context.tokenPos].sval.c_str());
+      val = find_symbol(m_context.getCurToken().sval.c_str());
    }
    else
    {
       m_context.fail("Number Expected");
       return;
    }
+   m_context.popToken();
+
    val -= offset;
    for (i = 0; i < bytes; i++)
       m_context.decodeBuf[codepos + i] = (val >> (i * 8)) & 0xFF;
-   m_context.tokenPos++;
 }
 
 void Context::clear() {
    m_hasError = false;
-   tokens.clear();
-   tokenPos = 0;
+   m_tokens.clear();
+   m_tokenPos = 0;
    decodeBuf.clear();
 }
 
 void Context::addToken(token_t type, const char *s, word_t i, char c)
 {
-   tokens.emplace_back(type, s, i, c);
+   m_tokens.emplace_back(type, s, i, c);
 }
 
 /**
@@ -425,7 +437,7 @@ void Context::print_code(FILE *out, int pos)
    char outstring[33];
    if (pos > 0xFFF)
    {
-      if (tokens.size())
+      if (m_tokens.size())
       {
          if (pos > 0xFFFF)
          {
@@ -442,7 +454,7 @@ void Context::print_code(FILE *out, int pos)
    }
    else
    {
-      if (tokens.size())
+      if (m_tokens.size())
       {
          if (pos > 0xFFF)
          {
@@ -480,8 +492,37 @@ void Context::fail(const char *message)
    {
       fprintf(stderr, "Error on line %d: %s\n", m_lineno, message);
       fprintf(stderr, "Line %d, Byte 0x%.4x: %s\n",
-         m_lineno, addr, m_line.c_str());
+         m_lineno, m_addr, m_line.c_str());
    }
    m_hasError = true;
 }
 
+token_rec Context::getCurToken() const
+{
+   return m_tokens.size() > m_tokenPos ? m_tokens[m_tokenPos] : token_rec();
+}
+
+void Context::popToken()
+{
+   m_tokenPos++;
+}
+
+token_rec Context::peekNextToken() const
+{
+   return m_tokens.size() > m_tokenPos + 1 ? m_tokens[m_tokenPos + 1] : token_rec();
+}
+
+bool Context::done() const
+{
+   return m_tokens.empty() || m_tokens.size() <= m_tokenPos;
+}
+
+int Context::getAddress() const
+{
+   return m_addr;
+}
+
+void Context::setAddress(int a)
+{
+   m_addr = a;
+}

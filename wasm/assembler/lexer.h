@@ -21,12 +21,20 @@ typedef enum
 // Token representation
 struct token_rec
 {
+   token_rec():
+      type(TOK_ERR),
+      sval(""),
+      ival(0),
+      cval(0)
+   {}
+
    token_rec(token_t t, const char *s, word_t i, char c):
       type(t),
       sval(s ? s : ""),
       ival(i),
       cval(c)
    {}
+
    token_t type;
    std::string sval;
    word_t ival;
@@ -44,7 +52,7 @@ struct symbol_t
 class Context
 {
 public:
-   Context() : addr(0), tokenPos(0), m_lineno(0), m_hasError(false) {}
+   Context() : m_lineno(0), m_hasError(false), m_addr(0), m_tokenPos(0) {}
 
    void clear();
    void addToken(token_t type, const char *s, word_t i, char c);
@@ -52,16 +60,22 @@ public:
    bool hasError() const;
    void print_code(FILE *out, int pos);
    void save_line(const char *s);
+   token_rec getCurToken() const;
+   token_rec peekNextToken() const;
+   void popToken();
+   bool done() const;
+   int getAddress() const;
+   void setAddress(int a);
 
-   int addr;
-   std::vector<token_rec> tokens;
-   int tokenPos;
    std::vector<char> decodeBuf;
 
 private:
    int m_lineno;
    std::string m_line;
    bool m_hasError;
+   int m_addr;
+   std::vector<token_rec> m_tokens;
+   size_t m_tokenPos;
 };
 
 class YasLexer
