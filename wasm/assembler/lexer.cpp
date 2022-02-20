@@ -459,3 +459,20 @@ void Context::save_line(const char *s)
    for (size_t i = line.size() - 1; line[i] == '\n' || line[i] == '\r'; i--)
       line[i] = '\0';
 }
+
+bool Context::hasError() const
+{
+   return m_hasError;
+}
+
+void Context::fail(const char *message)
+{
+   if (!m_hasError)
+   {
+      fprintf(stderr, "Error on line %d: %s\n", lineno, message);
+      fprintf(stderr, "Line %d, Byte 0x%.4x: %s\n",
+         lineno, addr, line.c_str());
+   }
+   m_hasError = true;
+}
+

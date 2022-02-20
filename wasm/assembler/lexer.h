@@ -58,18 +58,8 @@ public:
       tokens.emplace_back(type, s, i, c);
    }
 
-   void fail(const char *message)
-   {
-      if (!m_hasError)
-      {
-         fprintf(stderr, "Error on line %d: %s\n", lineno, message);
-         fprintf(stderr, "Line %d, Byte 0x%.4x: %s\n",
-            lineno, addr, line.c_str());
-      }
-      m_hasError = true;
-   }
-
-   bool hasError() const { return m_hasError; }
+   void fail(const char *message);
+   bool hasError() const;
    void print_code(FILE *out, int pos);
    void save_line(const char *s);
 
