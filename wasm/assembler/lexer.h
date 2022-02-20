@@ -61,21 +61,28 @@ public:
    void print_code(FILE *out, int pos);
    void save_line(const char *s);
    token_rec getCurToken() const;
-   token_rec peekNextToken() const;
    void popToken();
    bool done() const;
    int getAddress() const;
    void setAddress(int a);
-
-   std::vector<char> decodeBuf;
+   void add_symbol(const char *name, int p);
+   void get_reg(int codepos, int hi);
+   void get_mem(int codepos);
+   void get_num(int codepos, int bytes, int offset);
+   void initDecodeBuf(int instrSize, uint8_t code);
 
 private:
+   int find_symbol(const char *name);
+
+private:
+   std::vector<symbol_t> m_symbols;
    int m_lineno;
    std::string m_line;
    bool m_hasError;
    int m_addr;
    std::vector<token_rec> m_tokens;
    size_t m_tokenPos;
+   std::vector<char> decodeBuf;
 };
 
 class YasLexer
@@ -100,11 +107,6 @@ public:
 
 private:
    void start_line();
-   void add_symbol(const char *name, int p);
-   int find_symbol(const char *name);
-   void get_reg(int codepos, int hi);
-   void get_mem(int codepos);
-   void get_num(int codepos, int bytes, int offset);
 
 private:
    void resetYasIn();
@@ -112,9 +114,6 @@ private:
 private:
    FILE *m_in;
    FILE *m_out;
-
-   // symbole table
-   std::vector<symbol_t> m_symbols;
 
    int m_pass;
    // set when any error happened

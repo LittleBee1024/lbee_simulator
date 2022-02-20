@@ -152,7 +152,7 @@ void YasLexer::finish_line()
       }
 
       if (m_pass == 1)
-         add_symbol(labelToken.sval.c_str(), m_context.getAddress());
+         m_context.add_symbol(labelToken.sval.c_str(), m_context.getAddress());
       m_context.popToken();
       if (m_context.done())
       {
@@ -232,19 +232,17 @@ void YasLexer::finish_line()
 
    // process the instructions
    m_context.popToken();
-   m_context.decodeBuf.resize(instrSize, 0);
-   m_context.decodeBuf[0] = instr->code;
-   m_context.decodeBuf[1] = HPACK(REG_NONE, REG_NONE);
+   m_context.initDecodeBuf(instrSize, instr->code);
    switch (instr->arg1)
    {
    case R_ARG:
-      get_reg(instr->arg1pos, instr->arg1hi);
+      m_context.get_reg(instr->arg1pos, instr->arg1hi);
       break;
    case M_ARG:
-      get_mem(instr->arg1pos);
+      m_context.get_mem(instr->arg1pos);
       break;
    case I_ARG:
-      get_num(instr->arg1pos, instr->arg1hi, 0);
+      m_context.get_num(instr->arg1pos, instr->arg1hi, 0);
       break;
    case NO_ARG:
    default:
@@ -265,13 +263,13 @@ void YasLexer::finish_line()
       switch (instr->arg2)
       {
       case R_ARG:
-         get_reg(instr->arg2pos, instr->arg2hi);
+         m_context.get_reg(instr->arg2pos, instr->arg2hi);
          break;
       case M_ARG:
-         get_mem(instr->arg2pos);
+         m_context.get_mem(instr->arg2pos);
          break;
       case I_ARG:
-         get_num(instr->arg2pos, instr->arg2hi, 0);
+         m_context.get_num(instr->arg2pos, instr->arg2hi, 0);
          break;
       case NO_ARG:
       default:
@@ -291,44 +289,44 @@ void YasLexer::start_line()
    m_context.clear();
 }
 
-void YasLexer::add_symbol(const char *name, int p)
+void Context::add_symbol(const char *name, int p)
 {
    m_symbols.emplace_back(name, p);
 }
 
-int YasLexer::find_symbol(const char *name)
+int Context::find_symbol(const char *name)
 {
    for (const auto &s : m_symbols)
    {
       if (s.name.compare(name) == 0)
          return s.pos;
    }
-   m_context.fail("Can't find label");
+   fail("Can't find label");
    return -1;
 }
 
 /* Parse Register from set of m_context.tokens and put into high or low
    4 bits of code[codepos] */
-void YasLexer::get_reg(int codepos, int hi)
+void Context::get_reg(int codepos, int hi)
 {
    int rval = REG_NONE;
    char c;
-   if (m_context.getCurToken().type != TOK_REG)
+   if (getCurToken().type != TOK_REG)
    {
-      m_context.fail("Expecting Register ID");
+      fail("Expecting Register ID");
       return;
    }
 
-   rval = find_register(m_context.getCurToken().sval.c_str());
-   m_context.popToken();
+   rval = find_register(getCurToken().sval.c_str());
+   popToken();
 
    /* Insert into output */
-   c = m_context.decodeBuf[codepos];
+   c = decodeBuf[codepos];
    if (hi)
       c = (c & 0x0F) | (rval << 4);
    else
       c = (c & 0xF0) | rval;
-   m_context.decodeBuf[codepos] = c;
+   decodeBuf[codepos] = c;
 }
 
 /* Get memory reference.
@@ -340,78 +338,78 @@ void YasLexer::get_reg(int codepos, int hi)
    Ident(Reg)
    Put Reg in low position of current byte, and Number in following bytes
    */
-void YasLexer::get_mem(int codepos)
+void Context::get_mem(int codepos)
 {
    char rval = REG_NONE;
    word_t val = 0;
    int i;
    char c;
-   token_t type = m_context.getCurToken().type;
+   token_t type = getCurToken().type;
    /* Deal with optional displacement */
    if (type == TOK_NUM)
    {
-      m_context.popToken();
-      val = m_context.getCurToken().ival;
-      type = m_context.getCurToken().type;
+      popToken();
+      val = getCurToken().ival;
+      type = getCurToken().type;
    }
    else if (type == TOK_IDENT)
    {
-      val = find_symbol(m_context.getCurToken().sval.c_str());
-      m_context.popToken();
-      type = m_context.getCurToken().type;
+      val = find_symbol(getCurToken().sval.c_str());
+      popToken();
+      type = getCurToken().type;
    }
    /* Check for optional register */
    if (type == TOK_PUNCT)
    {
-      if (m_context.getCurToken().cval == '(')
+      if (getCurToken().cval == '(')
       {
-         m_context.popToken();
-         if (m_context.getCurToken().type != TOK_REG)
+         popToken();
+         if (getCurToken().type != TOK_REG)
          {
-            m_context.fail("Expecting Register Id");
+            fail("Expecting Register Id");
             return;
          }
 
-         rval = find_register(m_context.getCurToken().sval.c_str());
-         m_context.popToken();
-         if (m_context.getCurToken().type != TOK_PUNCT || m_context.getCurToken().cval != ')')
+         rval = find_register(getCurToken().sval.c_str());
+         popToken();
+         if (getCurToken().type != TOK_PUNCT || getCurToken().cval != ')')
          {
-            m_context.fail("Expecting ')'");
+            fail("Expecting ')'");
             return;
          }
-         m_context.popToken();
+         popToken();
       }
    }
-   c = (m_context.decodeBuf[codepos] & 0xF0) | (rval & 0xF);
-   m_context.decodeBuf[codepos++] = c;
+   c = (decodeBuf[codepos] & 0xF0) | (rval & 0xF);
+   decodeBuf[codepos++] = c;
    for (i = 0; i < 8; i++)
-      m_context.decodeBuf[codepos + i] = (val >> (i * 8)) & 0xFF;
+      decodeBuf[codepos + i] = (val >> (i * 8)) & 0xFF;
 }
 
 /* Get numeric value of given number of bytes */
 /* Offset indicates value to subtract from number (for PC relative) */
-void YasLexer::get_num(int codepos, int bytes, int offset)
+void Context::get_num(int codepos, int bytes, int offset)
 {
    word_t val = 0;
    int i;
-   if (m_context.getCurToken().type == TOK_NUM)
+   if (getCurToken().type == TOK_NUM)
    {
-      val = m_context.getCurToken().ival;
+      val = getCurToken().ival;
    }
-   else if (m_context.getCurToken().type == TOK_IDENT)
+   else if (getCurToken().type == TOK_IDENT)
    {
-      val = find_symbol(m_context.getCurToken().sval.c_str());
+      val = find_symbol(getCurToken().sval.c_str());
    }
    else
    {
-      m_context.fail("Number Expected");
+      fail("Number Expected");
       return;
    }
-   m_context.popToken();
+   popToken();
 
    val -= offset;
    for (i = 0; i < bytes; i++)
-      m_context.decodeBuf[codepos + i] = (val >> (i * 8)) & 0xFF;
+      decodeBuf[codepos + i] = (val >> (i * 8)) & 0xFF;
 }
 
 void Context::clear() {
@@ -507,11 +505,6 @@ void Context::popToken()
    m_tokenPos++;
 }
 
-token_rec Context::peekNextToken() const
-{
-   return m_tokens.size() > m_tokenPos + 1 ? m_tokens[m_tokenPos + 1] : token_rec();
-}
-
 bool Context::done() const
 {
    return m_tokens.empty() || m_tokens.size() <= m_tokenPos;
@@ -525,4 +518,11 @@ int Context::getAddress() const
 void Context::setAddress(int a)
 {
    m_addr = a;
+}
+
+void Context::initDecodeBuf(int instrSize, uint8_t code)
+{
+   decodeBuf.resize(instrSize, 0);
+   decodeBuf[0] = code;
+   decodeBuf[1] = HPACK(REG_NONE, REG_NONE);
 }
