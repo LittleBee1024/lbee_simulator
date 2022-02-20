@@ -1,5 +1,6 @@
 #include "lexer.h"
 
+#include <cassert>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,9 +17,6 @@ YasLexer::YasLexer(const char *inFilename) : m_in(nullptr),
                                              m_out(nullptr),
                                              m_pass(0),
                                              m_hitError(0),
-                                             m_addr(0),
-                                             m_errorLine(false),
-                                             m_curLineNum(1),
                                              m_tokenPos(0)
 {
    m_in = fopen(inFilename, "r");
@@ -69,7 +67,7 @@ std::string YasLexer::parse()
 
 void YasLexer::increase_line_num()
 {
-   m_curLineNum++;
+   m_context.lineno++;
 }
 
 void YasLexer::resetYasIn()
@@ -77,12 +75,12 @@ void YasLexer::resetYasIn()
    fseek(m_in, 0, SEEK_SET);
 }
 
-void YasLexer::save_line(char *s)
+void YasLexer::save_line(const char *s)
 {
-   m_curLine.clear();
-   m_curLine = s;
-   for (size_t i = m_curLine.size() - 1; m_curLine[i] == '\n' || m_curLine[i] == '\r'; i--)
-      m_curLine[i] = '\0';
+   assert(s);
+   m_context.line = s;
+   for (size_t i = m_context.line.size() - 1; m_context.line[i] == '\n' || m_context.line[i] == '\r'; i--)
+      m_context.line[i] = '\0';
 }
 
 void YasLexer::add_instr(char *s)
@@ -119,7 +117,7 @@ void YasLexer::finish_line()
 {
    int size;
    instr_ptr instr;
-   int savedAddr = m_addr;
+   int savedAddr = m_context.addr;
    m_tokenPos = 0;
    if (m_tokens.empty())
    {
@@ -129,7 +127,7 @@ void YasLexer::finish_line()
       return; /* Empty line */
    }
    /* Completion of an erroneous line */
-   if (m_errorLine)
+   if (m_context.hasError)
    {
       start_line();
       return;
@@ -147,7 +145,7 @@ void YasLexer::finish_line()
       else
       {
          if (m_pass == 1)
-            add_symbol(m_tokens[0].sval.c_str(), m_addr);
+            add_symbol(m_tokens[0].sval.c_str(), m_context.addr);
          m_tokenPos += 2;
          if (m_tokens.size() == 2)
          {
@@ -175,10 +173,10 @@ void YasLexer::finish_line()
          start_line();
          return;
       }
-      m_addr = m_tokens[m_tokenPos].ival;
+      m_context.addr = m_tokens[m_tokenPos].ival;
       if (m_pass > 1)
       {
-         print_code(m_out, m_addr);
+         print_code(m_out, m_context.addr);
       }
       start_line();
       return;
@@ -193,11 +191,11 @@ void YasLexer::finish_line()
          start_line();
          return;
       }
-      m_addr = ((m_addr + a - 1) / a) * a;
+      m_context.addr = ((m_context.addr + a - 1) / a) * a;
 
       if (m_pass > 1)
       {
-         print_code(m_out, m_addr);
+         print_code(m_out, m_context.addr);
       }
       start_line();
       return;
@@ -210,8 +208,8 @@ void YasLexer::finish_line()
       instr = bad_instr();
    }
    size = instr->bytes;
-   m_addr += size;
-   m_curCode.resize(size, 0);
+   m_context.addr += size;
+   m_context.decodeBuf.resize(size, 0);
 
    /* If this is m_pass 1, then we're done */
    if (m_pass == 1)
@@ -221,8 +219,8 @@ void YasLexer::finish_line()
    }
 
    /* Here's where we really process the instructions */
-   m_curCode[0] = instr->code;
-   m_curCode[1] = HPACK(REG_NONE, REG_NONE);
+   m_context.decodeBuf[0] = instr->code;
+   m_context.decodeBuf[1] = HPACK(REG_NONE, REG_NONE);
    switch (instr->arg1)
    {
    case R_ARG:
@@ -273,23 +271,22 @@ void YasLexer::finish_line()
 
 void YasLexer::fail(const char *message)
 {
-   if (!m_errorLine)
+   if (!m_context.hasError)
    {
-      fprintf(stderr, "Error on line %d: %s\n", m_curLineNum, message);
+      fprintf(stderr, "Error on line %d: %s\n", m_context.lineno, message);
       fprintf(stderr, "Line %d, Byte 0x%.4x: %s\n",
-         m_curLineNum, m_addr, m_curLine.c_str());
+         m_context.lineno, m_context.addr, m_context.line.c_str());
    }
-   m_errorLine = true;
+   m_context.hasError = true;
    m_hitError = 1;
 }
 
 void YasLexer::start_line()
 {
-   // clear the error of the line to continue the next line
-   m_errorLine = false;
+   // clear current context to continue the next line
+   m_context.clear();
    m_tokenPos = 0;
    m_tokens.clear();
-   m_curCode.clear();
 }
 
 void YasLexer::add_token(token_t type, char *s, word_t i, char c)
@@ -348,12 +345,12 @@ void YasLexer::get_reg(int codepos, int hi)
       rval = find_register(m_tokens[m_tokenPos].sval.c_str());
    }
    /* Insert into output */
-   c = m_curCode[codepos];
+   c = m_context.decodeBuf[codepos];
    if (hi)
       c = (c & 0x0F) | (rval << 4);
    else
       c = (c & 0xF0) | rval;
-   m_curCode[codepos] = c;
+   m_context.decodeBuf[codepos] = c;
    m_tokenPos++;
 }
 
@@ -404,10 +401,10 @@ void YasLexer::get_mem(int codepos)
          }
       }
    }
-   c = (m_curCode[codepos] & 0xF0) | (rval & 0xF);
-   m_curCode[codepos++] = c;
+   c = (m_context.decodeBuf[codepos] & 0xF0) | (rval & 0xF);
+   m_context.decodeBuf[codepos++] = c;
    for (i = 0; i < 8; i++)
-      m_curCode[codepos + i] = (val >> (i * 8)) & 0xFF;
+      m_context.decodeBuf[codepos + i] = (val >> (i * 8)) & 0xFF;
 }
 
 /* Get numeric value of given number of bytes */
@@ -431,7 +428,7 @@ void YasLexer::get_num(int codepos, int bytes, int offset)
    }
    val -= offset;
    for (i = 0; i < bytes; i++)
-      m_curCode[codepos + i] = (val >> (i * 8)) & 0xFF;
+      m_context.decodeBuf[codepos + i] = (val >> (i * 8)) & 0xFF;
    m_tokenPos++;
 }
 /**
@@ -454,8 +451,8 @@ void YasLexer::print_code(FILE *out, int pos)
          }
          snprintf(outstring, sizeof(outstring), "0x0000:                      | ");
          hexstuff(outstring + 2, pos, 4);
-         for (size_t i = 0; i < m_curCode.size(); i++)
-            hexstuff(outstring + 7 + 2 * i, m_curCode[i] & 0xFF, 2);
+         for (size_t i = 0; i < m_context.decodeBuf.size(); i++)
+            hexstuff(outstring + 7 + 2 * i, m_context.decodeBuf[i] & 0xFF, 2);
       }
       else
          snprintf(outstring, sizeof(outstring), "                             | ");
@@ -471,11 +468,11 @@ void YasLexer::print_code(FILE *out, int pos)
          }
          snprintf(outstring, sizeof(outstring), "0x000:                      | ");
          hexstuff(outstring + 2, pos, 3);
-         for (size_t i = 0; i < m_curCode.size(); i++)
-            hexstuff(outstring + 7 + 2 * i, m_curCode[i] & 0xFF, 2);
+         for (size_t i = 0; i < m_context.decodeBuf.size(); i++)
+            hexstuff(outstring + 7 + 2 * i, m_context.decodeBuf[i] & 0xFF, 2);
       }
       else
          snprintf(outstring, sizeof(outstring), "                            | ");
    }
-   fprintf(out, "%s%s\n", outstring, m_curLine.c_str());
+   fprintf(out, "%s%s\n", outstring, m_context.line.c_str());
 }

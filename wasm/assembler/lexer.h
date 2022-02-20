@@ -34,6 +34,28 @@ struct symbol_t
    int pos;
 };
 
+// struct for lexer context, will be updated during processing a line
+struct Context
+{
+   Context() : lineno(0), addr(0), hasError(false), tokenPos(0) {}
+
+   void clear() {
+      hasError = false;
+      tokens.clear();
+      tokenPos = 0;
+      decodeBuf.clear();
+   }
+
+   int lineno;
+   int addr;
+   std::string line;
+
+   bool hasError;
+   std::vector<token_rec> tokens;
+   int tokenPos;
+   std::vector<char> decodeBuf;
+};
+
 class YasLexer
 {
 public:
@@ -45,7 +67,7 @@ public:
    std::string parse();
 
 public:
-   void save_line(char *);
+   void save_line(const char *);
    void add_instr(char *);
    void add_reg(char *);
    void add_num(int64_t);
@@ -80,19 +102,11 @@ private:
    int m_pass;
    // set when any error happened
    int m_hitError;
-   // address of current instruction being processed
-   int m_addr;
+   // current processing data
+   Context m_context;
 
-   // current has error or not
-   bool m_errorLine;
-   // current line number
-   int m_curLineNum;
-   // current line string
-   std::string m_curLine;
    // tokens in current line
    std::vector<token_rec> m_tokens;
    // current process token position
    int m_tokenPos;
-   // current process code
-   std::vector<char> m_curCode;
 };
