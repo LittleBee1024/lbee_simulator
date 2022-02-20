@@ -40,13 +40,14 @@ struct symbol_t
    int pos;
 };
 
-// struct for lexer context, will be updated during processing a line
-struct Context
+// class for lexer context, will be updated during processing a line
+class Context
 {
-   Context() : lineno(0), addr(0), hasError(false), tokenPos(0) {}
+public:
+   Context() : lineno(0), addr(0), m_hasError(false), tokenPos(0) {}
 
    void clear() {
-      hasError = false;
+      m_hasError = false;
       tokens.clear();
       tokenPos = 0;
       decodeBuf.clear();
@@ -59,20 +60,24 @@ struct Context
 
    void fail(const char *message)
    {
-      if (!hasError)
+      if (!m_hasError)
       {
          fprintf(stderr, "Error on line %d: %s\n", lineno, message);
          fprintf(stderr, "Line %d, Byte 0x%.4x: %s\n",
             lineno, addr, line.c_str());
       }
-      hasError = true;
+      m_hasError = true;
    }
+
+   bool hasError() const { return m_hasError; }
+   void print_code(FILE *out, int pos);
+   void save_line(const char *s);
 
    int lineno;
    int addr;
    std::string line;
 
-   bool hasError;
+   bool m_hasError;
    std::vector<token_rec> tokens;
    int tokenPos;
    std::vector<char> decodeBuf;
@@ -102,13 +107,11 @@ public:
 private:
    void fail(const char *message);
    void start_line();
-   void hexstuff(char *dest, word_t value, int len);
    void add_symbol(const char *name, int p);
    int find_symbol(const char *name);
    void get_reg(int codepos, int hi);
    void get_mem(int codepos);
    void get_num(int codepos, int bytes, int offset);
-   void print_code(FILE *out, int pos);
 
 private:
    void resetYasIn();

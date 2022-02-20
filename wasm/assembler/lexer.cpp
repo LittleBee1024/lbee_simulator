@@ -13,6 +13,23 @@
 extern FILE *yasin;
 extern int yaslex(YasLexer *);
 
+namespace
+{
+
+void hexstuff(char *dest, word_t value, int len)
+{
+   int i;
+   for (i = 0; i < len; i++)
+   {
+      char c;
+      int h = (value >> 4 * i) & 0xF;
+      c = h < 10 ? h + '0' : h - 10 + 'a';
+      dest[len - i - 1] = c;
+   }
+}
+
+}
+
 YasLexer::YasLexer(const char *inFilename) : m_in(nullptr),
                                              m_out(nullptr),
                                              m_pass(0),
@@ -76,10 +93,7 @@ void YasLexer::resetYasIn()
 
 void YasLexer::save_line(const char *s)
 {
-   assert(s);
-   m_context.line = s;
-   for (size_t i = m_context.line.size() - 1; m_context.line[i] == '\n' || m_context.line[i] == '\r'; i--)
-      m_context.line[i] = '\0';
+   m_context.save_line(s);
 }
 
 void YasLexer::add_instr(char *s)
@@ -118,12 +132,12 @@ void YasLexer::finish_line()
    if (m_context.tokens.empty())
    {
       if (m_pass > 1)
-         print_code(m_out, savedAddr);
+         m_context.print_code(m_out, savedAddr);
       start_line();
       return; /* Empty line */
    }
    /* Completion of an erroneous line */
-   if (m_context.hasError)
+   if (m_context.hasError())
    {
       start_line();
       return;
@@ -148,7 +162,7 @@ void YasLexer::finish_line()
          {
             /* That's all for this line */
             if (m_pass > 1)
-               print_code(m_out, savedAddr);
+               m_context.print_code(m_out, savedAddr);
             start_line();
             return;
          }
@@ -173,7 +187,7 @@ void YasLexer::finish_line()
       m_context.addr = m_context.tokens[m_context.tokenPos].ival;
       if (m_pass > 1)
       {
-         print_code(m_out, m_context.addr);
+         m_context.print_code(m_out, m_context.addr);
       }
       start_line();
       return;
@@ -192,7 +206,7 @@ void YasLexer::finish_line()
 
       if (m_pass > 1)
       {
-         print_code(m_out, m_context.addr);
+         m_context.print_code(m_out, m_context.addr);
       }
       start_line();
       return;
@@ -262,28 +276,16 @@ void YasLexer::finish_line()
       }
    }
 
-   print_code(m_out, savedAddr);
+   m_context.print_code(m_out, savedAddr);
    start_line();
 }
 
 void YasLexer::start_line()
 {
-   if (m_context.hasError)
+   if (m_context.hasError())
       m_hitError = 1;
    // clear current context to continue the next line
    m_context.clear();
-}
-
-void YasLexer::hexstuff(char *dest, word_t value, int len)
-{
-   int i;
-   for (i = 0; i < len; i++)
-   {
-      char c;
-      int h = (value >> 4 * i) & 0xF;
-      c = h < 10 ? h + '0' : h - 10 + 'a';
-      dest[len - i - 1] = c;
-   }
 }
 
 void YasLexer::add_symbol(const char *name, int p)
@@ -410,42 +412,50 @@ void YasLexer::get_num(int codepos, int bytes, int offset)
  *      where HHHH is address
  *      cccccccccccccccccccc is code
  */
-void YasLexer::print_code(FILE *out, int pos)
+void Context::print_code(FILE *out, int pos)
 {
    char outstring[33];
    if (pos > 0xFFF)
    {
-      if (m_context.tokens.size())
+      if (tokens.size())
       {
          if (pos > 0xFFFF)
          {
-            m_context.fail("Code address limit exceeded");
+            fail("Code address limit exceeded");
             exit(1);
          }
          snprintf(outstring, sizeof(outstring), "0x0000:                      | ");
          hexstuff(outstring + 2, pos, 4);
-         for (size_t i = 0; i < m_context.decodeBuf.size(); i++)
-            hexstuff(outstring + 7 + 2 * i, m_context.decodeBuf[i] & 0xFF, 2);
+         for (size_t i = 0; i < decodeBuf.size(); i++)
+            hexstuff(outstring + 7 + 2 * i, decodeBuf[i] & 0xFF, 2);
       }
       else
          snprintf(outstring, sizeof(outstring), "                             | ");
    }
    else
    {
-      if (m_context.tokens.size())
+      if (tokens.size())
       {
          if (pos > 0xFFF)
          {
-            m_context.fail("Code address limit exceeded");
+            fail("Code address limit exceeded");
             exit(1);
          }
          snprintf(outstring, sizeof(outstring), "0x000:                      | ");
          hexstuff(outstring + 2, pos, 3);
-         for (size_t i = 0; i < m_context.decodeBuf.size(); i++)
-            hexstuff(outstring + 7 + 2 * i, m_context.decodeBuf[i] & 0xFF, 2);
+         for (size_t i = 0; i < decodeBuf.size(); i++)
+            hexstuff(outstring + 7 + 2 * i, decodeBuf[i] & 0xFF, 2);
       }
       else
          snprintf(outstring, sizeof(outstring), "                            | ");
    }
-   fprintf(out, "%s%s\n", outstring, m_context.line.c_str());
+   fprintf(out, "%s%s\n", outstring, line.c_str());
+}
+
+void Context::save_line(const char *s)
+{
+   assert(s);
+   line = s;
+   for (size_t i = line.size() - 1; line[i] == '\n' || line[i] == '\r'; i--)
+      line[i] = '\0';
 }
