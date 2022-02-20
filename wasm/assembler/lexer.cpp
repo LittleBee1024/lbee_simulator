@@ -44,10 +44,6 @@ YasLexer::YasLexer(const char *inFilename) : m_in(nullptr),
    yasin = m_in;
 }
 
-YasLexer::YasLexer(const char *buf, size_t size)
-{
-}
-
 int YasLexer::parse(const char *outFilename)
 {
    m_out = fopen(outFilename, "w");
@@ -76,42 +72,37 @@ YasLexer::~YasLexer()
       fclose(m_out);
 }
 
-std::string YasLexer::parse()
-{
-   return "";
-}
-
 void YasLexer::resetYasIn()
 {
    fseek(m_in, 0, SEEK_SET);
 }
 
-void YasLexer::save_line(const char *s)
+void YasLexer::loadLine(const char *s)
 {
-   m_context.save_line(s);
+   m_context.loadLine(s);
 }
 
-void YasLexer::add_instr(char *s)
+void YasLexer::addInstr(char *s)
 {
    m_context.addToken(TOK_INSTR, s, 0, ' ');
 }
 
-void YasLexer::add_reg(char *s)
+void YasLexer::addReg(char *s)
 {
    m_context.addToken(TOK_REG, s, 0, ' ');
 }
 
-void YasLexer::add_num(int64_t i)
+void YasLexer::addNum(int64_t i)
 {
    m_context.addToken(TOK_NUM, NULL, i, ' ');
 }
 
-void YasLexer::add_punct(char c)
+void YasLexer::addPunct(char c)
 {
    m_context.addToken(TOK_PUNCT, NULL, 0, c);
 }
 
-void YasLexer::add_ident(char *s)
+void YasLexer::addIdent(char *s)
 {
    m_context.addToken(TOK_IDENT, s, 0, ' ');
 }
@@ -121,21 +112,21 @@ void YasLexer::error(const char *message)
    m_context.fail(message);
 }
 
-void YasLexer::finish_line()
+void YasLexer::processTokens()
 {
    // Empty line, to start next line
    if (m_context.done())
    {
       if (m_pass > 1)
          m_context.print_code(m_out, m_context.getAddress());
-      start_line();
+      resetLine();
       return;
    }
 
    // error happened, to start next line
    if (m_context.hasError())
    {
-      start_line();
+      resetLine();
       return;
    }
 
@@ -147,7 +138,7 @@ void YasLexer::finish_line()
       if (m_context.getCurToken().type != TOK_PUNCT || m_context.getCurToken().cval != ':')
       {
          m_context.fail("Missing Colon");
-         start_line();
+         resetLine();
          return;
       }
 
@@ -158,7 +149,7 @@ void YasLexer::finish_line()
       {
          if (m_pass > 1)
             m_context.print_code(m_out, m_context.getAddress());
-         start_line();
+         resetLine();
          return;
       }
    }
@@ -167,7 +158,7 @@ void YasLexer::finish_line()
    if (m_context.getCurToken().type != TOK_INSTR)
    {
       m_context.fail("Bad Instruction");
-      start_line();
+      resetLine();
       return;
    }
 
@@ -178,7 +169,7 @@ void YasLexer::finish_line()
       if (m_context.getCurToken().type != TOK_NUM)
       {
          m_context.fail("Invalid Address");
-         start_line();
+         resetLine();
          return;
       }
 
@@ -187,7 +178,7 @@ void YasLexer::finish_line()
       {
          m_context.print_code(m_out, m_context.getAddress());
       }
-      start_line();
+      resetLine();
       return;
    }
 
@@ -199,7 +190,7 @@ void YasLexer::finish_line()
       if (m_context.getCurToken().type != TOK_NUM || (a = m_context.getCurToken().ival) <= 0)
       {
          m_context.fail("Invalid Alignment");
-         start_line();
+         resetLine();
          return;
       }
       m_context.setAddress(((m_context.getAddress() + a - 1) / a) * a);
@@ -208,7 +199,7 @@ void YasLexer::finish_line()
       {
          m_context.print_code(m_out, m_context.getAddress());
       }
-      start_line();
+      resetLine();
       return;
    }
 
@@ -226,7 +217,7 @@ void YasLexer::finish_line()
    // don't process instruction in pass 1
    if (m_pass == 1)
    {
-      start_line();
+      resetLine();
       return;
    }
 
@@ -254,7 +245,7 @@ void YasLexer::finish_line()
       if (m_context.getCurToken().type != TOK_PUNCT || m_context.getCurToken().cval != ',')
       {
          m_context.fail("Expecting Comma");
-         start_line();
+         resetLine();
          return;
       }
       m_context.popToken();
@@ -278,10 +269,10 @@ void YasLexer::finish_line()
    }
 
    m_context.print_code(m_out, instrAddr);
-   start_line();
+   resetLine();
 }
 
-void YasLexer::start_line()
+void YasLexer::resetLine()
 {
    if (m_context.hasError())
       m_hitError = 1;
@@ -472,7 +463,7 @@ void Context::print_code(FILE *out, int pos)
    fprintf(out, "%s%s\n", outstring, m_line.c_str());
 }
 
-void Context::save_line(const char *s)
+void Context::loadLine(const char *s)
 {
    assert(s);
    m_line = s;

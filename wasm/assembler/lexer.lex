@@ -23,20 +23,20 @@ Reg           %rax|%rcx|%rdx|%rbx|%rsi|%rdi|%rsp|%rbp|%r8|%r9|%r10|%r11|%r12|%r1
 %x ERR
 %%
 
-^{Char}*{Return}*{Newline}      {lexer->save_line(yytext); REJECT;} /* Snarf input line */
-#{Char}*{Return}*{Newline}      {lexer->finish_line();}
-"//"{Char}*{Return}*{Newline}   {lexer->finish_line();}
-"/*"{Char}*{Return}*{Newline}   {lexer->finish_line();}
-{Blank}*{Return}*{Newline}      {lexer->finish_line();}
+^{Char}*{Return}*{Newline}      {lexer->loadLine(yytext); REJECT;} /* Snarf input line */
+#{Char}*{Return}*{Newline}      {lexer->processTokens();}
+"//"{Char}*{Return}*{Newline}   {lexer->processTokens();}
+"/*"{Char}*{Return}*{Newline}   {lexer->processTokens();}
+{Blank}*{Return}*{Newline}      {lexer->processTokens();}
 
 {Blank}+                        ;
 "$"+                            ;
-{Instr}                         lexer->add_instr(yytext);
-{Reg}                           lexer->add_reg(yytext);
-[-]?{Digit}+                    lexer->add_num(atoll(yytext));
-"0"[xX]{Hex}+                   lexer->add_num(strtoull(yytext, nullptr, 16));
-[():,]                          lexer->add_punct(*yytext);
-{Ident}                         lexer->add_ident(yytext);
+{Instr}                         lexer->addInstr(yytext);
+{Reg}                           lexer->addReg(yytext);
+[-]?{Digit}+                    lexer->addNum(atoll(yytext));
+"0"[xX]{Hex}+                   lexer->addNum(strtoull(yytext, nullptr, 16));
+[():,]                          lexer->addPunct(*yytext);
+{Ident}                         lexer->addIdent(yytext);
 {Char}                          {; BEGIN ERR;}
 <ERR>{Char}*{Newline}           {lexer->error("Invalid line"); BEGIN 0;}
 %%

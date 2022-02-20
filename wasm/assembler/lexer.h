@@ -59,10 +59,10 @@ public:
    void addSymbol(const char *name, int p);
    void addToken(token_t type, const char *s, word_t i, char c);
    void resetLine();
+   void loadLine(const char *s);
 
    bool hasError() const;
    void print_code(FILE *out, int pos);
-   void save_line(const char *s);
    token_rec getCurToken() const;
    void popToken();
    bool done() const;
@@ -91,26 +91,21 @@ class YasLexer
 {
 public:
    explicit YasLexer(const char *inFilename);
-   explicit YasLexer(const char *buf, size_t size);
    ~YasLexer();
-
    int parse(const char *outFilename);
-   std::string parse();
 
 public:
-   void save_line(const char *);
-   void add_instr(char *);
-   void add_reg(char *);
-   void add_num(int64_t);
-   void add_punct(char);
-   void add_ident(char *);
+   void loadLine(const char *);
+   void addInstr(char *);
+   void addReg(char *);
+   void addNum(int64_t);
+   void addPunct(char);
+   void addIdent(char *);
    void error(const char *);
-   void finish_line();
+   void processTokens();
 
 private:
-   void start_line();
-
-private:
+   void resetLine();
    void resetYasIn();
 
 private:
