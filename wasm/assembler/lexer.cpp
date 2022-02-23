@@ -10,10 +10,6 @@
 extern FILE *yasin;
 extern int yaslex(YasLexer *);
 
-#define DONE 1
-#define ERR -1
-#define CONTINUE 0
-
 namespace
 {
 
@@ -44,7 +40,7 @@ int YasLexer::parse(FILE *in, FILE *out)
    if (!m_in)
    {
       error("Can't open input file");
-      return ERR;
+      return ERROR;
    }
    // yasin is a global variable defined in flex
    yasin = m_in;
@@ -53,14 +49,14 @@ int YasLexer::parse(FILE *in, FILE *out)
    if (!m_out)
    {
       error("Can't open output file");
-      return ERR;
+      return ERROR;
    }
 
    m_pass = 1;
    resetYasIn();
    yaslex(this);
    if (m_hitError)
-      return ERR;
+      return ERROR;
 
    m_pass = 2;
    resetYasIn();
@@ -367,7 +363,7 @@ int LexerImpl::processLabel(FILE *out, int pass)
    if (m_tokens.front().type != TOK_PUNCT || m_tokens.front().cval != ':')
    {
       fail("Missing Colon");
-      return ERR;
+      return ERROR;
    }
 
    if (pass == 1)
@@ -388,7 +384,7 @@ int LexerImpl::processPosInstr(FILE *out, int pass)
    if (m_tokens.front().type != TOK_INSTR)
    {
       fail("Bad Instruction");
-      return ERR;
+      return ERROR;
    }
 
    if (strcmp(m_tokens.front().sval.c_str(), ".pos") != 0)
@@ -398,7 +394,7 @@ int LexerImpl::processPosInstr(FILE *out, int pass)
    if (m_tokens.front().type != TOK_NUM)
    {
       fail("Invalid Address");
-      return ERR;
+      return ERROR;
    }
 
    m_addr = m_tokens.front().ival;
@@ -414,7 +410,7 @@ int LexerImpl::processAlignInstr(FILE *out, int pass)
    if (m_tokens.front().type != TOK_INSTR)
    {
       fail("Bad Instruction");
-      return ERR;
+      return ERROR;
    }
 
    if (strcmp(m_tokens.front().sval.c_str(), ".align") != 0)
@@ -425,7 +421,7 @@ int LexerImpl::processAlignInstr(FILE *out, int pass)
    if (m_tokens.front().type != TOK_NUM || (a = m_tokens.front().ival) <= 0)
    {
       fail("Invalid Alignment");
-      return ERR;
+      return ERROR;
    }
 
    m_addr = ((m_addr + a - 1) / a) * a;
@@ -441,14 +437,14 @@ int LexerImpl::processNormalInstr(FILE *out, int pass)
    if (m_tokens.front().type != TOK_INSTR)
    {
       fail("Bad Instruction");
-      return ERR;
+      return ERROR;
    }
 
    instr_ptr instr = find_instr(m_tokens.front().sval.c_str());
    if (instr == NULL)
    {
       fail("Invalid Instruction");
-      return ERR;
+      return ERROR;
    }
    // get expected instruction token, pop it from the deque
    m_tokens.pop_front();
@@ -486,7 +482,7 @@ int LexerImpl::processNormalInstr(FILE *out, int pass)
       if (m_tokens.front().type != TOK_PUNCT || m_tokens.front().cval != ',')
       {
          fail("Expecting Comma");
-         return ERR;
+         return ERROR;
       }
       m_tokens.pop_front();
 

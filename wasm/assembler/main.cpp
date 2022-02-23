@@ -63,7 +63,9 @@ void demo()
    FILE *in = fmemopen(&buf[0], buf.size(), "r");
    FILE *out = fopen("demo.yo", "w");
 
-   YasLexer().parse(in, out);
+   (YasLexer().parse(in, out) == ERROR) ?
+      printf("Yas Lexer parse has error\n") :
+      printf("Yas Lexer parse is done\n");
 
    if (!in)
       fclose(in);
@@ -88,7 +90,9 @@ int main(int argc, char *argv[])
    std::string outfname = infname.substr(0, infname.find_last_of('.')) + ".yo";
    FILE *out = fopen(outfname.c_str(), "w");
 
-   YasLexer().parse(in, out);
+   (YasLexer().parse(in, out) == ERROR) ?
+      printf("Yas Lexer parse has error\n") :
+      printf("Yas Lexer parse is done\n");
 
    if (!in)
       fclose(in);
