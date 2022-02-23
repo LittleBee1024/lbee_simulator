@@ -76,8 +76,8 @@ private:
    void get_mem(int codepos);
    void get_num(int codepos, int bytes, int offset);
 
-   void print_code(FILE *out, int pos);
-   void printNoTokenLine(FILE *out);
+   void printCode(FILE *out);
+   void printLine(FILE *out);
 
 private:
    std::unordered_map<std::string, int> m_symbols;

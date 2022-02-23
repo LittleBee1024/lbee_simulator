@@ -287,37 +287,33 @@ void LexerImpl::addToken(token_t type, const char *s, word_t i, char c)
  *      where HHHH is address
  *      cccccccccccccccccccc is code
  */
-void LexerImpl::printNoTokenLine(FILE *out)
+void LexerImpl::printLine(FILE *out)
 {
    char outstring[33];
    snprintf(outstring, sizeof(outstring), "                            | ");
    fprintf(out, "%s%s\n", outstring, m_line.c_str());
 }
 
-void LexerImpl::print_code(FILE *out, int pos)
+void LexerImpl::printCode(FILE *out)
 {
-   char outstring[33];
-   if (pos > 0xFFF)
+   if (m_addr > 0xFFFF)
    {
-      if (pos > 0xFFFF)
-      {
-         fail("Code address limit exceeded");
-         exit(1);
-      }
+      fail("Code address limit exceeded");
+      exit(1);
+   }
+
+   char outstring[33];
+   if (m_addr > 0xFFF)
+   {
       snprintf(outstring, sizeof(outstring), "0x0000:                      | ");
-      hexstuff(outstring + 2, pos, 4);
+      hexstuff(outstring + 2, m_addr, 4);
       for (size_t i = 0; i < decodeBuf.size(); i++)
          hexstuff(outstring + 7 + 2 * i, decodeBuf[i] & 0xFF, 2);
    }
    else
    {
-      if (pos > 0xFFF)
-      {
-         fail("Code address limit exceeded");
-         exit(1);
-      }
       snprintf(outstring, sizeof(outstring), "0x000:                      | ");
-      hexstuff(outstring + 2, pos, 3);
+      hexstuff(outstring + 2, m_addr, 3);
       for (size_t i = 0; i < decodeBuf.size(); i++)
          hexstuff(outstring + 7 + 2 * i, decodeBuf[i] & 0xFF, 2);
    }
@@ -354,7 +350,7 @@ int LexerImpl::processEmptyLine(FILE *out, int pass)
    if (m_tokens.empty())
    {
       if (pass > 1)
-         printNoTokenLine(out);
+         printLine(out);
       return DONE;
    }
    return CONTINUE;
@@ -379,7 +375,7 @@ int LexerImpl::processLabel(FILE *out, int pass)
    if (m_tokens.empty())
    {
       if (pass > 1)
-         print_code(out, m_addr);
+         printCode(out);
       return DONE;
    }
 
@@ -407,7 +403,7 @@ int LexerImpl::processPosInstr(FILE *out, int pass)
    m_addr = m_tokens.front().ival;
    if (pass > 1)
    {
-      print_code(out, m_addr);
+      printCode(out);
    }
    return DONE;
 }
@@ -434,7 +430,7 @@ int LexerImpl::processAlignInstr(FILE *out, int pass)
    m_addr = ((m_addr + a - 1) / a) * a;
    if (pass > 1)
    {
-      print_code(out, m_addr);
+      printCode(out);
    }
    return DONE;
 }
@@ -455,16 +451,16 @@ int LexerImpl::processNormalInstr(FILE *out, int pass)
    }
    // get expected instruction token, pop it from the deque
    m_tokens.pop_front();
-   int instrSize = instr->bytes;
-   int instrAddr = m_addr;
-   m_addr += instrSize;
 
    // don't process instruction in pass 1
    if (pass == 1)
+   {
+      m_addr += instr->bytes;
       return DONE;
+   }
 
    // process the instructions
-   decodeBuf.resize(instrSize, 0);
+   decodeBuf.resize(instr->bytes, 0);
    decodeBuf[0] = instr->code;
    decodeBuf[1] = HPACK(REG_NONE, REG_NONE);
    switch (instr->arg1)
@@ -511,6 +507,7 @@ int LexerImpl::processNormalInstr(FILE *out, int pass)
       }
    }
 
-   print_code(out, instrAddr);
+   printCode(out);
+   m_addr += instr->bytes;
    return DONE;
 }
