@@ -55,9 +55,9 @@ private:
    void addSymbol(const char *name, int p);
    int findSymbol(const char *name);
 
-   void get_reg(int codepos, int hi);
-   void get_mem(int codepos);
-   void get_num(int codepos, int bytes, int offset);
+   void getReg(int codepos, int hi);
+   void getMem(int codepos);
+   void getNum(int codepos, int bytes, int offset);
 
    void printCode(FILE *out);
    void printLine(FILE *out);

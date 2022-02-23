@@ -162,7 +162,7 @@ int LexerImpl::findSymbol(const char *name)
 
 /* Parse Register from set of m_impl.tokens and put into high or low
    4 bits of code[codepos] */
-void LexerImpl::get_reg(int codepos, int hi)
+void LexerImpl::getReg(int codepos, int hi)
 {
    int rval = REG_NONE;
    char c;
@@ -193,7 +193,7 @@ void LexerImpl::get_reg(int codepos, int hi)
    Ident(Reg)
    Put Reg in low position of current byte, and Number in following bytes
    */
-void LexerImpl::get_mem(int codepos)
+void LexerImpl::getMem(int codepos)
 {
    char rval = REG_NONE;
    word_t val = 0;
@@ -243,7 +243,7 @@ void LexerImpl::get_mem(int codepos)
 
 /* Get numeric value of given number of bytes */
 /* Offset indicates value to subtract from number (for PC relative) */
-void LexerImpl::get_num(int codepos, int bytes, int offset)
+void LexerImpl::getNum(int codepos, int bytes, int offset)
 {
    word_t val = 0;
    int i;
@@ -470,13 +470,13 @@ int LexerImpl::processNormalInstr(FILE *out, int pass)
    switch (instr->arg1)
    {
    case R_ARG:
-      get_reg(instr->arg1pos, instr->arg1hi);
+      getReg(instr->arg1pos, instr->arg1hi);
       break;
    case M_ARG:
-      get_mem(instr->arg1pos);
+      getMem(instr->arg1pos);
       break;
    case I_ARG:
-      get_num(instr->arg1pos, instr->arg1hi, 0);
+      getNum(instr->arg1pos, instr->arg1hi, 0);
       break;
    case NO_ARG:
    default:
@@ -497,13 +497,13 @@ int LexerImpl::processNormalInstr(FILE *out, int pass)
       switch (instr->arg2)
       {
       case R_ARG:
-         get_reg(instr->arg2pos, instr->arg2hi);
+         getReg(instr->arg2pos, instr->arg2hi);
          break;
       case M_ARG:
-         get_mem(instr->arg2pos);
+         getMem(instr->arg2pos);
          break;
       case I_ARG:
-         get_num(instr->arg2pos, instr->arg2hi, 0);
+         getNum(instr->arg2pos, instr->arg2hi, 0);
          break;
       case NO_ARG:
       default:
