@@ -84,6 +84,7 @@ public:
    int startProcessInstr();
    int processPosInstr(FILE *out, int pass);
    int processAlignInstr(FILE *out, int pass);
+   int processNormalInstr(FILE *out, int pass);
 
 private:
    int findSymbol(const char *name);

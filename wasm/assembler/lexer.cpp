@@ -160,73 +160,10 @@ void YasLexer::processTokens()
       return;
    }
 
-   // process normal instruction for its size
-   instr_ptr instr = find_instr(m_context.getCurToken().sval.c_str());
-   if (instr == NULL)
-   {
-      m_context.fail("Invalid Instruction");
-      instr = bad_instr();
-   }
-   int instrSize = instr->bytes;
-   int instrAddr = m_context.getAddress();
-   m_context.setAddress(m_context.getAddress() + instrSize);
-
-   // don't process instruction in pass 1
-   if (m_pass == 1)
-   {
-      resetLine();
-      return;
-   }
-
-   // process the instructions
-   m_context.popToken();
-   m_context.initDecodeBuf(instrSize, instr->code);
-   switch (instr->arg1)
-   {
-   case R_ARG:
-      m_context.get_reg(instr->arg1pos, instr->arg1hi);
-      break;
-   case M_ARG:
-      m_context.get_mem(instr->arg1pos);
-      break;
-   case I_ARG:
-      m_context.get_num(instr->arg1pos, instr->arg1hi, 0);
-      break;
-   case NO_ARG:
-   default:
-      break;
-   }
-   if (instr->arg2 != NO_ARG)
-   {
-      /* Get comma  */
-      if (m_context.getCurToken().type != TOK_PUNCT || m_context.getCurToken().cval != ',')
-      {
-         m_context.fail("Expecting Comma");
-         resetLine();
-         return;
-      }
-      m_context.popToken();
-
-      /* Get second argument */
-      switch (instr->arg2)
-      {
-      case R_ARG:
-         m_context.get_reg(instr->arg2pos, instr->arg2hi);
-         break;
-      case M_ARG:
-         m_context.get_mem(instr->arg2pos);
-         break;
-      case I_ARG:
-         m_context.get_num(instr->arg2pos, instr->arg2hi, 0);
-         break;
-      case NO_ARG:
-      default:
-         break;
-      }
-   }
-
-   m_context.print_code(m_out, instrAddr);
+   // process normal instruction
+   m_context.processNormalInstr(m_out, m_pass);
    resetLine();
+   return;
 }
 
 void YasLexer::resetLine()
@@ -554,5 +491,74 @@ int Context::processAlignInstr(FILE *out, int pass)
    {
       print_code(out, getAddress());
    }
+   return DONE;
+}
+
+int Context::processNormalInstr(FILE *out, int pass)
+{
+   instr_ptr instr = find_instr(getCurToken().sval.c_str());
+   if (instr == NULL)
+   {
+      fail("Invalid Instruction");
+      return ERR;
+   }
+   int instrSize = instr->bytes;
+   int instrAddr = getAddress();
+   setAddress(getAddress() + instrSize);
+
+   // don't process instruction in pass 1
+   if (pass == 1)
+   {
+      return DONE;
+   }
+
+   // process the instructions
+   popToken();
+   initDecodeBuf(instrSize, instr->code);
+   switch (instr->arg1)
+   {
+   case R_ARG:
+      get_reg(instr->arg1pos, instr->arg1hi);
+      break;
+   case M_ARG:
+      get_mem(instr->arg1pos);
+      break;
+   case I_ARG:
+      get_num(instr->arg1pos, instr->arg1hi, 0);
+      break;
+   case NO_ARG:
+   default:
+      break;
+   }
+
+   if (instr->arg2 != NO_ARG)
+   {
+      /* Get comma  */
+      if (getCurToken().type != TOK_PUNCT || getCurToken().cval != ',')
+      {
+         fail("Expecting Comma");
+         return ERR;
+      }
+      popToken();
+
+      /* Get second argument */
+      switch (instr->arg2)
+      {
+      case R_ARG:
+         get_reg(instr->arg2pos, instr->arg2hi);
+         break;
+      case M_ARG:
+         get_mem(instr->arg2pos);
+         break;
+      case I_ARG:
+         get_num(instr->arg2pos, instr->arg2hi, 0);
+         break;
+      case NO_ARG:
+      default:
+         break;
+      }
+   }
+
+   print_code(out, instrAddr);
    return DONE;
 }
