@@ -133,6 +133,9 @@ void YasLexer::processTokens()
 
    if (m_impl.processNormalInstr(m_out, m_pass))
       return reset();
+
+   error("Has unprocess tokens");
+   reset();
 }
 
 void YasLexer::reset()
