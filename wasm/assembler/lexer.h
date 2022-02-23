@@ -59,7 +59,7 @@ public:
    void fail(const char *message);
    void addSymbol(const char *name, int p);
    void addToken(token_t type, const char *s, word_t i, char c);
-   void resetLine();
+   void reset();
    void loadLine(const char *s);
 
    bool hasError() const;
@@ -79,6 +79,7 @@ public:
 
    void print_code(FILE *out, int pos);
    void printNoTokenLine(FILE *out);
+   int processLabel(FILE *out, int pass);
 
 private:
    int findSymbol(const char *name);

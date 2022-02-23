@@ -13,6 +13,10 @@
 extern FILE *yasin;
 extern int yaslex(YasLexer *);
 
+#define DONE 1
+#define ERR -1
+#define SUCCESS 0
+
 namespace
 {
 
@@ -131,27 +135,10 @@ void YasLexer::processTokens()
    }
 
    // process label, to start next line if the line only has label
-   if (m_context.getCurToken().type == TOK_IDENT)
+   if (m_context.processLabel(m_out, m_pass))
    {
-      token_rec labelToken = m_context.getCurToken();
-      m_context.popToken();
-      if (m_context.getCurToken().type != TOK_PUNCT || m_context.getCurToken().cval != ':')
-      {
-         m_context.fail("Missing Colon");
-         resetLine();
-         return;
-      }
-
-      if (m_pass == 1)
-         m_context.addSymbol(labelToken.sval.c_str(), m_context.getAddress());
-      m_context.popToken();
-      if (m_context.done())
-      {
-         if (m_pass > 1)
-            m_context.print_code(m_out, m_context.getAddress());
-         resetLine();
-         return;
-      }
+      resetLine();
+      return;
    }
 
    // it should be instruction if the token is not label
@@ -277,7 +264,7 @@ void YasLexer::resetLine()
    if (m_context.hasError())
       m_hitError = 1;
    // clear current context to continue the next line
-   m_context.resetLine();
+   m_context.reset();
 }
 
 void Context::addSymbol(const char *name, int p)
@@ -405,7 +392,8 @@ void Context::get_num(int codepos, int bytes, int offset)
       decodeBuf[codepos + i] = (val >> (i * 8)) & 0xFF;
 }
 
-void Context::resetLine() {
+void Context::reset()
+{
    m_hasError = false;
    m_tokens.clear();
    decodeBuf.clear();
@@ -468,6 +456,32 @@ void Context::loadLine(const char *s)
    m_lineno++;
 }
 
+int Context::processLabel(FILE *out, int pass)
+{
+   if (getCurToken().type != TOK_IDENT)
+      return SUCCESS;
+
+   token_rec labelToken = getCurToken();
+   popToken();
+   if (getCurToken().type != TOK_PUNCT || getCurToken().cval != ':')
+   {
+      fail("Missing Colon");
+      return ERR;
+   }
+
+   if (pass == 1)
+      addSymbol(labelToken.sval.c_str(), getAddress());
+   popToken();
+   if (done())
+   {
+      if (pass > 1)
+         print_code(out, getAddress());
+      return DONE;
+   }
+
+   return SUCCESS;
+}
+
 bool Context::hasError() const
 {
    return m_hasError;
@@ -479,7 +493,7 @@ void Context::fail(const char *message)
    {
       fprintf(stderr, "Error on line %d: %s\n", m_lineno, message);
       fprintf(stderr, "Line %d, Byte 0x%.4x: %s\n",
-         m_lineno, m_addr, m_line.c_str());
+              m_lineno, m_addr, m_line.c_str());
    }
    m_hasError = true;
 }
