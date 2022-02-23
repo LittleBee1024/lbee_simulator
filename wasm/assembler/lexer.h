@@ -3,9 +3,6 @@
 #include "isa.h"
 
 #include <deque>
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdio.h>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -18,36 +15,22 @@ typedef enum
    TOK_INSTR,
    TOK_PUNCT,
    TOK_ERR
-} token_t;
+} TokenType;
 
 // Token representation
-struct token_rec
+struct Token
 {
-   token_rec():
-      type(TOK_ERR),
-      sval(""),
-      ival(0),
-      cval(0)
-   {}
-
-   token_rec(token_t t, const char *s, word_t i, char c):
+   Token(TokenType t, const char *s, word_t i, char c):
       type(t),
       sval(s ? s : ""),
       ival(i),
       cval(c)
    {}
 
-   token_t type;
+   TokenType type;
    std::string sval;
    word_t ival;
    char cval;
-};
-
-struct symbol_t
-{
-   symbol_t(const char *n, int p): name(n), pos(p) {}
-   std::string name;
-   int pos;
 };
 
 class LexerImpl
@@ -58,7 +41,7 @@ public:
    void loadLine(const char *s);
    void resetLine();
 
-   void addToken(token_t type, const char *s, word_t i, char c);
+   void addToken(TokenType type, const char *s, word_t i, char c);
    void fail(const char *message);
 
    bool hasError() const;
@@ -85,7 +68,7 @@ private:
    std::string m_line;
    bool m_hasError;
    int m_addr;
-   std::deque<token_rec> m_tokens;
+   std::deque<Token> m_tokens;
    std::vector<char> decodeBuf;
 };
 

@@ -1,11 +1,9 @@
 #include "lexer.h"
 
-#include <cassert>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdexcept>
-#include <vector>
 
 /***************************************
  * Variables and functions from flex
@@ -201,7 +199,7 @@ void LexerImpl::get_mem(int codepos)
    word_t val = 0;
    int i;
    char c;
-   token_t type = m_tokens.front().type;
+   TokenType type = m_tokens.front().type;
    /* Deal with optional displacement */
    if (type == TOK_NUM)
    {
@@ -276,16 +274,14 @@ void LexerImpl::resetLine()
    decodeBuf.clear();
 }
 
-void LexerImpl::addToken(token_t type, const char *s, word_t i, char c)
+void LexerImpl::addToken(TokenType type, const char *s, word_t i, char c)
 {
    m_tokens.emplace_back(type, s, i, c);
 }
 
 /**
  * Printing format:
- *  0xHHHH: cccccccccccccccccccc | <line>
- *      where HHHH is address
- *      cccccccccccccccccccc is code
+ *                               | <line>
  */
 void LexerImpl::printLine(FILE *out)
 {
@@ -294,6 +290,12 @@ void LexerImpl::printLine(FILE *out)
    fprintf(out, "%s%s\n", outstring, m_line.c_str());
 }
 
+/**
+ * Printing format:
+ *  0xHHHH: cccccccccccccccccccc | <line>
+ *      where HHHH is address
+ *      cccccccccccccccccccc is code
+ */
 void LexerImpl::printCode(FILE *out)
 {
    if (m_addr > 0xFFFF)
@@ -322,7 +324,9 @@ void LexerImpl::printCode(FILE *out)
 
 void LexerImpl::loadLine(const char *s)
 {
-   assert(s);
+   if (s == nullptr)
+      return;
+
    m_line = s;
    for (size_t i = m_line.size() - 1; m_line[i] == '\n' || m_line[i] == '\r'; i--)
       m_line[i] = '\0';
@@ -361,7 +365,7 @@ int LexerImpl::processLabel(FILE *out, int pass)
    if (m_tokens.front().type != TOK_IDENT)
       return CONTINUE;
 
-   token_rec labelToken = m_tokens.front();
+   Token labelToken = m_tokens.front();
    m_tokens.pop_front();
    if (m_tokens.front().type != TOK_PUNCT || m_tokens.front().cval != ':')
    {
