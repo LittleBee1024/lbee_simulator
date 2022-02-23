@@ -168,14 +168,14 @@ void LexerImpl::get_reg(int codepos, int hi)
 {
    int rval = REG_NONE;
    char c;
-   if (getCurToken().type != TOK_REG)
+   if (m_tokens.front().type != TOK_REG)
    {
       fail("Expecting Register ID");
       return;
    }
 
-   rval = find_register(getCurToken().sval.c_str());
-   popToken();
+   rval = find_register(m_tokens.front().sval.c_str());
+   m_tokens.pop_front();
 
    /* Insert into output */
    c = decodeBuf[codepos];
@@ -201,40 +201,40 @@ void LexerImpl::get_mem(int codepos)
    word_t val = 0;
    int i;
    char c;
-   token_t type = getCurToken().type;
+   token_t type = m_tokens.front().type;
    /* Deal with optional displacement */
    if (type == TOK_NUM)
    {
-      popToken();
-      val = getCurToken().ival;
-      type = getCurToken().type;
+      m_tokens.pop_front();
+      val = m_tokens.front().ival;
+      type = m_tokens.front().type;
    }
    else if (type == TOK_IDENT)
    {
-      val = findSymbol(getCurToken().sval.c_str());
-      popToken();
-      type = getCurToken().type;
+      val = findSymbol(m_tokens.front().sval.c_str());
+      m_tokens.pop_front();
+      type = m_tokens.front().type;
    }
    /* Check for optional register */
    if (type == TOK_PUNCT)
    {
-      if (getCurToken().cval == '(')
+      if (m_tokens.front().cval == '(')
       {
-         popToken();
-         if (getCurToken().type != TOK_REG)
+         m_tokens.pop_front();
+         if (m_tokens.front().type != TOK_REG)
          {
             fail("Expecting Register Id");
             return;
          }
 
-         rval = find_register(getCurToken().sval.c_str());
-         popToken();
-         if (getCurToken().type != TOK_PUNCT || getCurToken().cval != ')')
+         rval = find_register(m_tokens.front().sval.c_str());
+         m_tokens.pop_front();
+         if (m_tokens.front().type != TOK_PUNCT || m_tokens.front().cval != ')')
          {
             fail("Expecting ')'");
             return;
          }
-         popToken();
+         m_tokens.pop_front();
       }
    }
    c = (decodeBuf[codepos] & 0xF0) | (rval & 0xF);
@@ -249,20 +249,20 @@ void LexerImpl::get_num(int codepos, int bytes, int offset)
 {
    word_t val = 0;
    int i;
-   if (getCurToken().type == TOK_NUM)
+   if (m_tokens.front().type == TOK_NUM)
    {
-      val = getCurToken().ival;
+      val = m_tokens.front().ival;
    }
-   else if (getCurToken().type == TOK_IDENT)
+   else if (m_tokens.front().type == TOK_IDENT)
    {
-      val = findSymbol(getCurToken().sval.c_str());
+      val = findSymbol(m_tokens.front().sval.c_str());
    }
    else
    {
       fail("Number Expected");
       return;
    }
-   popToken();
+   m_tokens.pop_front();
 
    val -= offset;
    for (i = 0; i < bytes; i++)
@@ -349,26 +349,6 @@ void LexerImpl::fail(const char *message)
    m_hasError = true;
 }
 
-token_rec LexerImpl::getCurToken() const
-{
-   return m_tokens.front();
-}
-
-void LexerImpl::popToken()
-{
-   m_tokens.pop_front();
-}
-
-int LexerImpl::getAddress() const
-{
-   return m_addr;
-}
-
-void LexerImpl::setAddress(int a)
-{
-   m_addr = a;
-}
-
 void LexerImpl::initDecodeBuf(int instrSize, uint8_t code)
 {
    decodeBuf.resize(instrSize, 0);
@@ -389,24 +369,24 @@ int LexerImpl::processEmptyLine(FILE *out, int pass)
 
 int LexerImpl::processLabel(FILE *out, int pass)
 {
-   if (getCurToken().type != TOK_IDENT)
+   if (m_tokens.front().type != TOK_IDENT)
       return CONTINUE;
 
-   token_rec labelToken = getCurToken();
-   popToken();
-   if (getCurToken().type != TOK_PUNCT || getCurToken().cval != ':')
+   token_rec labelToken = m_tokens.front();
+   m_tokens.pop_front();
+   if (m_tokens.front().type != TOK_PUNCT || m_tokens.front().cval != ':')
    {
       fail("Missing Colon");
       return ERR;
    }
 
    if (pass == 1)
-      addSymbol(labelToken.sval.c_str(), getAddress());
-   popToken();
+      addSymbol(labelToken.sval.c_str(), m_addr);
+   m_tokens.pop_front();
    if (m_tokens.empty())
    {
       if (pass > 1)
-         print_code(out, getAddress());
+         print_code(out, m_addr);
       return DONE;
    }
 
@@ -415,74 +395,74 @@ int LexerImpl::processLabel(FILE *out, int pass)
 
 int LexerImpl::processPosInstr(FILE *out, int pass)
 {
-   if (getCurToken().type != TOK_INSTR)
+   if (m_tokens.front().type != TOK_INSTR)
    {
       fail("Bad Instruction");
       return ERR;
    }
 
-   if (strcmp(getCurToken().sval.c_str(), ".pos") != 0)
+   if (strcmp(m_tokens.front().sval.c_str(), ".pos") != 0)
       return CONTINUE;
 
-   popToken();
-   if (getCurToken().type != TOK_NUM)
+   m_tokens.pop_front();
+   if (m_tokens.front().type != TOK_NUM)
    {
       fail("Invalid Address");
       return ERR;
    }
 
-   setAddress(getCurToken().ival);
+   m_addr = m_tokens.front().ival;
    if (pass > 1)
    {
-      print_code(out, getAddress());
+      print_code(out, m_addr);
    }
    return DONE;
 }
 
 int LexerImpl::processAlignInstr(FILE *out, int pass)
 {
-   if (getCurToken().type != TOK_INSTR)
+   if (m_tokens.front().type != TOK_INSTR)
    {
       fail("Bad Instruction");
       return ERR;
    }
 
-   if (strcmp(getCurToken().sval.c_str(), ".align") != 0)
+   if (strcmp(m_tokens.front().sval.c_str(), ".align") != 0)
       return CONTINUE;
 
    int a;
-   popToken();
-   if (getCurToken().type != TOK_NUM || (a = getCurToken().ival) <= 0)
+   m_tokens.pop_front();
+   if (m_tokens.front().type != TOK_NUM || (a = m_tokens.front().ival) <= 0)
    {
       fail("Invalid Alignment");
       return ERR;
    }
 
-   setAddress(((getAddress() + a - 1) / a) * a);
+   m_addr = ((m_addr + a - 1) / a) * a;
    if (pass > 1)
    {
-      print_code(out, getAddress());
+      print_code(out, m_addr);
    }
    return DONE;
 }
 
 int LexerImpl::processNormalInstr(FILE *out, int pass)
 {
-   if (getCurToken().type != TOK_INSTR)
+   if (m_tokens.front().type != TOK_INSTR)
    {
       fail("Bad Instruction");
       return ERR;
    }
 
-   instr_ptr instr = find_instr(getCurToken().sval.c_str());
+   instr_ptr instr = find_instr(m_tokens.front().sval.c_str());
    if (instr == NULL)
    {
       fail("Invalid Instruction");
       return ERR;
    }
    int instrSize = instr->bytes;
-   int instrAddr = getAddress();
-   setAddress(getAddress() + instrSize);
+   int instrAddr = m_addr;
+   m_addr += instrSize;
 
    // don't process instruction in pass 1
    if (pass == 1)
@@ -491,7 +471,7 @@ int LexerImpl::processNormalInstr(FILE *out, int pass)
    }
 
    // process the instructions
-   popToken();
+   m_tokens.pop_front();
    initDecodeBuf(instrSize, instr->code);
    switch (instr->arg1)
    {
@@ -512,12 +492,12 @@ int LexerImpl::processNormalInstr(FILE *out, int pass)
    if (instr->arg2 != NO_ARG)
    {
       /* Get comma  */
-      if (getCurToken().type != TOK_PUNCT || getCurToken().cval != ',')
+      if (m_tokens.front().type != TOK_PUNCT || m_tokens.front().cval != ',')
       {
          fail("Expecting Comma");
          return ERR;
       }
-      popToken();
+      m_tokens.pop_front();
 
       /* Get second argument */
       switch (instr->arg2)

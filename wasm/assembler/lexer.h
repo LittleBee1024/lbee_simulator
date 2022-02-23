@@ -72,12 +72,6 @@ private:
    void addSymbol(const char *name, int p);
    int findSymbol(const char *name);
 
-   token_rec getCurToken() const;
-   void popToken();
-
-   int getAddress() const;
-   void setAddress(int a);
-
    void get_reg(int codepos, int hi);
    void get_mem(int codepos);
    void get_num(int codepos, int bytes, int offset);
