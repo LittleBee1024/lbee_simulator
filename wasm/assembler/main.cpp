@@ -62,7 +62,13 @@ void demo()
    std::string buf(s_code);
    FILE *in = fmemopen(&buf[0], buf.size(), "r");
    FILE *out = fopen("demo.yo", "w");
+
    YasLexer().parse(in, out);
+
+   if (!in)
+      fclose(in);
+   if (!out)
+      fclose(out);
 }
 
 int main(int argc, char *argv[])
@@ -83,6 +89,11 @@ int main(int argc, char *argv[])
    FILE *out = fopen(outfname.c_str(), "w");
 
    YasLexer().parse(in, out);
+
+   if (!in)
+      fclose(in);
+   if (!out)
+      fclose(out);
 
    return 0;
 }

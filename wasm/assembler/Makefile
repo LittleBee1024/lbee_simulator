@@ -23,5 +23,8 @@ $(TARGET): $(OBJS)
 run:
 	./$(TARGET) code.ys && diff code.yo code.yo.golden && cat code.yo
 
+demo:
+	./$(TARGET) && diff demo.yo code.yo.golden
+
 clean:
 	rm -rf $(TARGET) $(LEX_GEN) *.o *.yo

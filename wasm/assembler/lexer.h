@@ -76,7 +76,6 @@ class YasLexer
 {
 public:
    YasLexer();
-   ~YasLexer();
    int parse(FILE *in, FILE *out);
 
 public:

@@ -68,14 +68,6 @@ int YasLexer::parse(FILE *in, FILE *out)
    return DONE;
 }
 
-YasLexer::~YasLexer()
-{
-   if (m_in)
-      fclose(m_in);
-   if (m_out)
-      fclose(m_out);
-}
-
 void YasLexer::resetYasIn()
 {
    fseek(m_in, 0, SEEK_SET);
