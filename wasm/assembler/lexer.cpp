@@ -118,52 +118,41 @@ void YasLexer::error(const char *message)
 
 void YasLexer::processTokens()
 {
-   // Empty line, to start next line
-   if (m_context.processEmptyLine(m_out, m_pass))
-   {
-      resetLine();
-      return;
-   }
-
-   // error happened, to start next line
    if (m_context.hasError())
    {
       resetLine();
       return;
    }
 
-   // process label, to start next line if the line only has label
+   if (m_context.processEmptyLine(m_out, m_pass))
+   {
+      resetLine();
+      return;
+   }
+
    if (m_context.processLabel(m_out, m_pass))
    {
       resetLine();
       return;
    }
 
-   // it should be instruction if the token is not label
-   if (m_context.startProcessInstr())
-   {
-      resetLine();
-      return;
-   }
-
-   // process .pos instruction
    if (m_context.processPosInstr(m_out, m_pass))
    {
       resetLine();
       return;
    }
 
-   // process .align instruction
    if (m_context.processAlignInstr(m_out, m_pass))
    {
       resetLine();
       return;
    }
 
-   // process normal instruction
-   m_context.processNormalInstr(m_out, m_pass);
-   resetLine();
-   return;
+   if (m_context.processNormalInstr(m_out, m_pass))
+   {
+      resetLine();
+      return;
+   }
 }
 
 void YasLexer::resetLine()
@@ -443,18 +432,14 @@ int Context::processLabel(FILE *out, int pass)
    return CONTINUE;
 }
 
-int Context::startProcessInstr()
+int Context::processPosInstr(FILE *out, int pass)
 {
    if (getCurToken().type != TOK_INSTR)
    {
       fail("Bad Instruction");
       return ERR;
    }
-   return CONTINUE;
-}
 
-int Context::processPosInstr(FILE *out, int pass)
-{
    if (strcmp(getCurToken().sval.c_str(), ".pos") != 0)
       return CONTINUE;
 
@@ -475,6 +460,12 @@ int Context::processPosInstr(FILE *out, int pass)
 
 int Context::processAlignInstr(FILE *out, int pass)
 {
+   if (getCurToken().type != TOK_INSTR)
+   {
+      fail("Bad Instruction");
+      return ERR;
+   }
+
    if (strcmp(getCurToken().sval.c_str(), ".align") != 0)
       return CONTINUE;
 
@@ -496,6 +487,12 @@ int Context::processAlignInstr(FILE *out, int pass)
 
 int Context::processNormalInstr(FILE *out, int pass)
 {
+   if (getCurToken().type != TOK_INSTR)
+   {
+      fail("Bad Instruction");
+      return ERR;
+   }
+
    instr_ptr instr = find_instr(getCurToken().sval.c_str());
    if (instr == NULL)
    {

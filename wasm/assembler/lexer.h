@@ -56,13 +56,22 @@ class Context
 public:
    Context() : m_lineno(0), m_hasError(false), m_addr(0) {}
 
-   void fail(const char *message);
-   void addSymbol(const char *name, int p);
-   void addToken(token_t type, const char *s, word_t i, char c);
-   void reset();
    void loadLine(const char *s);
+   void addToken(token_t type, const char *s, word_t i, char c);
+
+   void reset();
+   void fail(const char *message);
 
    bool hasError() const;
+   int processEmptyLine(FILE *out, int pass);
+   int processLabel(FILE *out, int pass);
+   int processPosInstr(FILE *out, int pass);
+   int processAlignInstr(FILE *out, int pass);
+   int processNormalInstr(FILE *out, int pass);
+
+private:
+   void addSymbol(const char *name, int p);
+   int findSymbol(const char *name);
 
    token_rec getCurToken() const;
    void popToken();
@@ -78,16 +87,6 @@ public:
 
    void print_code(FILE *out, int pos);
    void printNoTokenLine(FILE *out);
-
-   int processEmptyLine(FILE *out, int pass);
-   int processLabel(FILE *out, int pass);
-   int startProcessInstr();
-   int processPosInstr(FILE *out, int pass);
-   int processAlignInstr(FILE *out, int pass);
-   int processNormalInstr(FILE *out, int pass);
-
-private:
-   int findSymbol(const char *name);
 
 private:
    std::unordered_map<std::string, int> m_symbols;
