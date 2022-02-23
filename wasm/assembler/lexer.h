@@ -2,6 +2,7 @@
 
 #include "isa.h"
 
+#include <deque>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -53,7 +54,7 @@ struct symbol_t
 class Context
 {
 public:
-   Context() : m_lineno(0), m_hasError(false), m_addr(0), m_tokenPos(0) {}
+   Context() : m_lineno(0), m_hasError(false), m_addr(0) {}
 
    void fail(const char *message);
    void addSymbol(const char *name, int p);
@@ -77,6 +78,7 @@ public:
    void initDecodeBuf(int instrSize, uint8_t code);
 
    void print_code(FILE *out, int pos);
+   void printNoTokenLine(FILE *out);
 
 private:
    int findSymbol(const char *name);
@@ -87,8 +89,7 @@ private:
    std::string m_line;
    bool m_hasError;
    int m_addr;
-   std::vector<token_rec> m_tokens;
-   size_t m_tokenPos;
+   std::deque<token_rec> m_tokens;
    std::vector<char> decodeBuf;
 };
 

@@ -118,7 +118,7 @@ void YasLexer::processTokens()
    if (m_context.done())
    {
       if (m_pass > 1)
-         m_context.print_code(m_out, m_context.getAddress());
+         m_context.printNoTokenLine(m_out);
       resetLine();
       return;
    }
@@ -408,7 +408,6 @@ void Context::get_num(int codepos, int bytes, int offset)
 void Context::resetLine() {
    m_hasError = false;
    m_tokens.clear();
-   m_tokenPos = 0;
    decodeBuf.clear();
 }
 
@@ -423,42 +422,39 @@ void Context::addToken(token_t type, const char *s, word_t i, char c)
  *      where HHHH is address
  *      cccccccccccccccccccc is code
  */
+void Context::printNoTokenLine(FILE *out)
+{
+   char outstring[33];
+   snprintf(outstring, sizeof(outstring), "                            | ");
+   fprintf(out, "%s%s\n", outstring, m_line.c_str());
+}
+
 void Context::print_code(FILE *out, int pos)
 {
    char outstring[33];
    if (pos > 0xFFF)
    {
-      if (m_tokens.size())
+      if (pos > 0xFFFF)
       {
-         if (pos > 0xFFFF)
-         {
-            fail("Code address limit exceeded");
-            exit(1);
-         }
-         snprintf(outstring, sizeof(outstring), "0x0000:                      | ");
-         hexstuff(outstring + 2, pos, 4);
-         for (size_t i = 0; i < decodeBuf.size(); i++)
-            hexstuff(outstring + 7 + 2 * i, decodeBuf[i] & 0xFF, 2);
+         fail("Code address limit exceeded");
+         exit(1);
       }
-      else
-         snprintf(outstring, sizeof(outstring), "                             | ");
+      snprintf(outstring, sizeof(outstring), "0x0000:                      | ");
+      hexstuff(outstring + 2, pos, 4);
+      for (size_t i = 0; i < decodeBuf.size(); i++)
+         hexstuff(outstring + 7 + 2 * i, decodeBuf[i] & 0xFF, 2);
    }
    else
    {
-      if (m_tokens.size())
+      if (pos > 0xFFF)
       {
-         if (pos > 0xFFF)
-         {
-            fail("Code address limit exceeded");
-            exit(1);
-         }
-         snprintf(outstring, sizeof(outstring), "0x000:                      | ");
-         hexstuff(outstring + 2, pos, 3);
-         for (size_t i = 0; i < decodeBuf.size(); i++)
-            hexstuff(outstring + 7 + 2 * i, decodeBuf[i] & 0xFF, 2);
+         fail("Code address limit exceeded");
+         exit(1);
       }
-      else
-         snprintf(outstring, sizeof(outstring), "                            | ");
+      snprintf(outstring, sizeof(outstring), "0x000:                      | ");
+      hexstuff(outstring + 2, pos, 3);
+      for (size_t i = 0; i < decodeBuf.size(); i++)
+         hexstuff(outstring + 7 + 2 * i, decodeBuf[i] & 0xFF, 2);
    }
    fprintf(out, "%s%s\n", outstring, m_line.c_str());
 }
@@ -490,17 +486,17 @@ void Context::fail(const char *message)
 
 token_rec Context::getCurToken() const
 {
-   return m_tokens.size() > m_tokenPos ? m_tokens[m_tokenPos] : token_rec();
+   return m_tokens.front();
 }
 
 void Context::popToken()
 {
-   m_tokenPos++;
+   m_tokens.pop_front();
 }
 
 bool Context::done() const
 {
-   return m_tokens.empty() || m_tokens.size() <= m_tokenPos;
+   return m_tokens.empty();
 }
 
 int Context::getAddress() const
