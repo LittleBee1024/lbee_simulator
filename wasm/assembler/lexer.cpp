@@ -27,24 +27,23 @@ namespace
 
 }
 
-YasLexer::YasLexer() : m_in(nullptr),
-                       m_out(nullptr),
-                       m_pass(0),
-                       m_hitError(false)
+YasLexer::YasLexer(FILE *in, FILE *out) : m_in(in),
+                                          m_out(out),
+                                          m_pass(0),
+                                          m_hitError(false),
+                                          m_impl(out)
 {
+   setYasIn();
 }
 
-int YasLexer::parse(FILE *in, FILE *out)
+int YasLexer::parse()
 {
-   m_in = in;
    if (!m_in)
    {
       error("Can't open input file");
       return ERROR;
    }
-   setYasIn();
 
-   m_out = out;
    if (!m_out)
    {
       error("Can't open output file");
@@ -114,19 +113,19 @@ void YasLexer::processTokens()
    if (m_impl.hasError())
       return reset();
 
-   if (m_impl.processEmptyLine(m_out, m_pass))
+   if (m_impl.processEmptyLine(m_pass))
       return reset();
 
-   if (m_impl.processLabel(m_out, m_pass))
+   if (m_impl.processLabel(m_pass))
       return reset();
 
-   if (m_impl.processPosInstr(m_out, m_pass))
+   if (m_impl.processPosInstr(m_pass))
       return reset();
 
-   if (m_impl.processAlignInstr(m_out, m_pass))
+   if (m_impl.processAlignInstr(m_pass))
       return reset();
 
-   if (m_impl.processNormalInstr(m_out, m_pass))
+   if (m_impl.processNormalInstr(m_pass))
       return reset();
 
    error("Has unprocess tokens");
@@ -281,11 +280,11 @@ void LexerImpl::addToken(TokenType type, const char *s, word_t i, char c)
  * Printing format:
  *                               | <line>
  */
-void LexerImpl::printLine(FILE *out)
+void LexerImpl::printLine()
 {
    char outstring[33];
    snprintf(outstring, sizeof(outstring), "                            | ");
-   fprintf(out, "%s%s\n", outstring, m_line.c_str());
+   fprintf(m_out, "%s%s\n", outstring, m_line.c_str());
 }
 
 /**
@@ -294,7 +293,7 @@ void LexerImpl::printLine(FILE *out)
  *      where HHHH is address
  *      cccccccccccccccccccc is code
  */
-void LexerImpl::printCode(FILE *out)
+void LexerImpl::printCode()
 {
    if (m_addr > 0xFFFF)
    {
@@ -317,7 +316,7 @@ void LexerImpl::printCode(FILE *out)
       for (size_t i = 0; i < decodeBuf.size(); i++)
          hexstuff(outstring + 7 + 2 * i, decodeBuf[i] & 0xFF, 2);
    }
-   fprintf(out, "%s%s\n", outstring, m_line.c_str());
+   fprintf(m_out, "%s%s\n", outstring, m_line.c_str());
 }
 
 void LexerImpl::loadLine(const char *s)
@@ -347,18 +346,18 @@ void LexerImpl::fail(const char *message)
    m_hasError = true;
 }
 
-int LexerImpl::processEmptyLine(FILE *out, int pass)
+int LexerImpl::processEmptyLine(int pass)
 {
    if (m_tokens.empty())
    {
       if (pass > 1)
-         printLine(out);
+         printLine();
       return DONE;
    }
    return CONTINUE;
 }
 
-int LexerImpl::processLabel(FILE *out, int pass)
+int LexerImpl::processLabel(int pass)
 {
    if (m_tokens.front().type != TOK_IDENT)
       return CONTINUE;
@@ -377,14 +376,14 @@ int LexerImpl::processLabel(FILE *out, int pass)
    if (m_tokens.empty())
    {
       if (pass > 1)
-         printCode(out);
+         printCode();
       return DONE;
    }
 
    return CONTINUE;
 }
 
-int LexerImpl::processPosInstr(FILE *out, int pass)
+int LexerImpl::processPosInstr(int pass)
 {
    if (m_tokens.front().type != TOK_INSTR)
    {
@@ -405,12 +404,12 @@ int LexerImpl::processPosInstr(FILE *out, int pass)
    m_addr = m_tokens.front().ival;
    if (pass > 1)
    {
-      printCode(out);
+      printCode();
    }
    return DONE;
 }
 
-int LexerImpl::processAlignInstr(FILE *out, int pass)
+int LexerImpl::processAlignInstr(int pass)
 {
    if (m_tokens.front().type != TOK_INSTR)
    {
@@ -432,12 +431,12 @@ int LexerImpl::processAlignInstr(FILE *out, int pass)
    m_addr = ((m_addr + a - 1) / a) * a;
    if (pass > 1)
    {
-      printCode(out);
+      printCode();
    }
    return DONE;
 }
 
-int LexerImpl::processNormalInstr(FILE *out, int pass)
+int LexerImpl::processNormalInstr(int pass)
 {
    if (m_tokens.front().type != TOK_INSTR)
    {
@@ -509,7 +508,7 @@ int LexerImpl::processNormalInstr(FILE *out, int pass)
       }
    }
 
-   printCode(out);
+   printCode();
    m_addr += instr->bytes;
    return DONE;
 }

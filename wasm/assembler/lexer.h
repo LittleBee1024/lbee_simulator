@@ -40,7 +40,7 @@ struct Token
 class LexerImpl
 {
 public:
-   LexerImpl() : m_lineno(0), m_hasError(false), m_addr(0) {}
+   explicit LexerImpl(FILE *out) : m_out(out), m_lineno(0), m_hasError(false), m_addr(0) {}
 
    void loadLine(const char *s);
    void resetLine();
@@ -49,11 +49,11 @@ public:
    void fail(const char *message);
 
    bool hasError() const;
-   int processEmptyLine(FILE *out, int pass);
-   int processLabel(FILE *out, int pass);
-   int processPosInstr(FILE *out, int pass);
-   int processAlignInstr(FILE *out, int pass);
-   int processNormalInstr(FILE *out, int pass);
+   int processEmptyLine(int pass);
+   int processLabel(int pass);
+   int processPosInstr(int pass);
+   int processAlignInstr(int pass);
+   int processNormalInstr(int pass);
 
 private:
    void addSymbol(const char *name, int p);
@@ -63,10 +63,11 @@ private:
    void getMem(int codepos);
    void getNum(int codepos, int bytes, int offset);
 
-   void printCode(FILE *out);
-   void printLine(FILE *out);
+   void printCode();
+   void printLine();
 
 private:
+   FILE *m_out;
    std::unordered_map<std::string, int> m_symbols;
    int m_lineno;
    std::string m_line;
@@ -79,8 +80,8 @@ private:
 class YasLexer
 {
 public:
-   YasLexer();
-   int parse(FILE *in, FILE *out);
+   YasLexer(FILE *in, FILE *out);
+   int parse();
 
 public:
    void load(const char *);
