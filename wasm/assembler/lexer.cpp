@@ -78,12 +78,12 @@ void YasLexer::load(const char *s)
    m_impl.loadLine(s);
 }
 
-void YasLexer::addInstr(char *s)
+void YasLexer::addInstr(const char *s)
 {
    m_impl.addToken(TOK_INSTR, s, 0, ' ');
 }
 
-void YasLexer::addReg(char *s)
+void YasLexer::addReg(const char *s)
 {
    m_impl.addToken(TOK_REG, s, 0, ' ');
 }
@@ -98,7 +98,7 @@ void YasLexer::addPunct(char c)
    m_impl.addToken(TOK_PUNCT, NULL, 0, c);
 }
 
-void YasLexer::addIdent(char *s)
+void YasLexer::addIdent(const char *s)
 {
    m_impl.addToken(TOK_IDENT, s, 0, ' ');
 }

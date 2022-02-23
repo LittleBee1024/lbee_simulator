@@ -26,5 +26,8 @@ run:
 demo:
 	./$(TARGET) && diff demo.yo code.yo.golden
 
+mem_check:
+	valgrind ./$(TARGET) --show-reachable=no
+
 clean:
 	rm -rf $(TARGET) $(LEX_GEN) *.o *.yo

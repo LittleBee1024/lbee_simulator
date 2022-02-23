@@ -84,11 +84,11 @@ public:
    void error(const char *);
 
    // add different tokens
-   void addInstr(char *);
-   void addReg(char *);
+   void addInstr(const char *);
+   void addReg(const char *);
    void addNum(int64_t);
    void addPunct(char);
-   void addIdent(char *);
+   void addIdent(const char *);
 
 private:
    void reset();
