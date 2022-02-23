@@ -75,9 +75,9 @@ private:
 class YasLexer
 {
 public:
-   explicit YasLexer(const char *inFilename);
+   YasLexer();
    ~YasLexer();
-   int parse(const char *outFilename);
+   int parse(FILE *in, FILE *out);
 
 public:
    void load(const char *);
@@ -100,6 +100,6 @@ private:
    FILE *m_out;
 
    int m_pass;
-   int m_hitError;
+   bool m_hitError;
    LexerImpl m_impl;
 };

@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdexcept>
 
 /***************************************
  * Variables and functions from flex
@@ -18,52 +17,55 @@ extern int yaslex(YasLexer *);
 namespace
 {
 
-void hexstuff(char *dest, word_t value, int len)
-{
-   int i;
-   for (i = 0; i < len; i++)
+   void hexstuff(char *dest, word_t value, int len)
    {
-      char c;
-      int h = (value >> 4 * i) & 0xF;
-      c = h < 10 ? h + '0' : h - 10 + 'a';
-      dest[len - i - 1] = c;
+      int i;
+      for (i = 0; i < len; i++)
+      {
+         char c;
+         int h = (value >> 4 * i) & 0xF;
+         c = h < 10 ? h + '0' : h - 10 + 'a';
+         dest[len - i - 1] = c;
+      }
    }
-}
 
 }
 
-YasLexer::YasLexer(const char *inFilename) : m_in(nullptr),
-                                             m_out(nullptr),
-                                             m_pass(0),
-                                             m_hitError(0)
+YasLexer::YasLexer() : m_in(nullptr),
+                       m_out(nullptr),
+                       m_pass(0),
+                       m_hitError(false)
 {
-   m_in = fopen(inFilename, "r");
+}
+
+int YasLexer::parse(FILE *in, FILE *out)
+{
+   m_in = in;
    if (!m_in)
    {
-      throw std::runtime_error("Can't open input file " + std::string(inFilename));
+      error("Can't open input file");
+      return ERR;
    }
    // yasin is a global variable defined in flex
    yasin = m_in;
-}
 
-int YasLexer::parse(const char *outFilename)
-{
-   m_out = fopen(outFilename, "w");
+   m_out = out;
    if (!m_out)
    {
-      throw std::runtime_error("Can't open output file " + std::string(outFilename));
+      error("Can't open output file");
+      return ERR;
    }
 
    m_pass = 1;
    resetYasIn();
    yaslex(this);
    if (m_hitError)
-      return m_hitError;
+      return ERR;
 
    m_pass = 2;
    resetYasIn();
    yaslex(this);
-   return m_hitError;
+   return DONE;
 }
 
 YasLexer::~YasLexer()
@@ -141,7 +143,7 @@ void YasLexer::processTokens()
 void YasLexer::reset()
 {
    if (m_impl.hasError())
-      m_hitError = 1;
+      m_hitError = true;
    m_impl.resetLine();
 }
 
