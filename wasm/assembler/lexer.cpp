@@ -81,7 +81,7 @@ void YasLexer::resetYasIn()
    fseek(m_in, 0, SEEK_SET);
 }
 
-void YasLexer::loadLine(const char *s)
+void YasLexer::load(const char *s)
 {
    m_context.loadLine(s);
 }
@@ -119,48 +119,30 @@ void YasLexer::error(const char *message)
 void YasLexer::processTokens()
 {
    if (m_context.hasError())
-   {
-      resetLine();
-      return;
-   }
+      return reset();
 
    if (m_context.processEmptyLine(m_out, m_pass))
-   {
-      resetLine();
-      return;
-   }
+      return reset();
 
    if (m_context.processLabel(m_out, m_pass))
-   {
-      resetLine();
-      return;
-   }
+      return reset();
 
    if (m_context.processPosInstr(m_out, m_pass))
-   {
-      resetLine();
-      return;
-   }
+      return reset();
 
    if (m_context.processAlignInstr(m_out, m_pass))
-   {
-      resetLine();
-      return;
-   }
+      return reset();
 
    if (m_context.processNormalInstr(m_out, m_pass))
-   {
-      resetLine();
-      return;
-   }
+      return reset();
 }
 
-void YasLexer::resetLine()
+void YasLexer::reset()
 {
    if (m_context.hasError())
       m_hitError = 1;
    // clear current context to continue the next line
-   m_context.reset();
+   m_context.resetLine();
 }
 
 void Context::addSymbol(const char *name, int p)
@@ -288,7 +270,7 @@ void Context::get_num(int codepos, int bytes, int offset)
       decodeBuf[codepos + i] = (val >> (i * 8)) & 0xFF;
 }
 
-void Context::reset()
+void Context::resetLine()
 {
    m_hasError = false;
    m_tokens.clear();

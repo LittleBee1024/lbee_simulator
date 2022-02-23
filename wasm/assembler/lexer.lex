@@ -23,7 +23,7 @@ Reg           %rax|%rcx|%rdx|%rbx|%rsi|%rdi|%rsp|%rbp|%r8|%r9|%r10|%r11|%r12|%r1
 %x ERR
 %%
 
-^{Char}*{Return}*{Newline}      {lexer->loadLine(yytext); REJECT;} /* Snarf input line */
+^{Char}*{Return}*{Newline}      {lexer->load(yytext); REJECT;} /* Snarf input line */
 #{Char}*{Return}*{Newline}      {lexer->processTokens();}
 "//"{Char}*{Return}*{Newline}   {lexer->processTokens();}
 "/*"{Char}*{Return}*{Newline}   {lexer->processTokens();}

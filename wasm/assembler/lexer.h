@@ -57,9 +57,9 @@ public:
    Context() : m_lineno(0), m_hasError(false), m_addr(0) {}
 
    void loadLine(const char *s);
-   void addToken(token_t type, const char *s, word_t i, char c);
+   void resetLine();
 
-   void reset();
+   void addToken(token_t type, const char *s, word_t i, char c);
    void fail(const char *message);
 
    bool hasError() const;
@@ -106,7 +106,7 @@ public:
    int parse(const char *outFilename);
 
 public:
-   void loadLine(const char *);
+   void load(const char *);
    void processTokens();
    void error(const char *);
 
@@ -118,7 +118,7 @@ public:
    void addIdent(char *);
 
 private:
-   void resetLine();
+   void reset();
    void resetYasIn();
 
 private:
