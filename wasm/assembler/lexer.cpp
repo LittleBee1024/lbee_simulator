@@ -83,74 +83,73 @@ void YasLexer::resetYasIn()
 
 void YasLexer::load(const char *s)
 {
-   m_context.loadLine(s);
+   m_impl.loadLine(s);
 }
 
 void YasLexer::addInstr(char *s)
 {
-   m_context.addToken(TOK_INSTR, s, 0, ' ');
+   m_impl.addToken(TOK_INSTR, s, 0, ' ');
 }
 
 void YasLexer::addReg(char *s)
 {
-   m_context.addToken(TOK_REG, s, 0, ' ');
+   m_impl.addToken(TOK_REG, s, 0, ' ');
 }
 
 void YasLexer::addNum(int64_t i)
 {
-   m_context.addToken(TOK_NUM, NULL, i, ' ');
+   m_impl.addToken(TOK_NUM, NULL, i, ' ');
 }
 
 void YasLexer::addPunct(char c)
 {
-   m_context.addToken(TOK_PUNCT, NULL, 0, c);
+   m_impl.addToken(TOK_PUNCT, NULL, 0, c);
 }
 
 void YasLexer::addIdent(char *s)
 {
-   m_context.addToken(TOK_IDENT, s, 0, ' ');
+   m_impl.addToken(TOK_IDENT, s, 0, ' ');
 }
 
 void YasLexer::error(const char *message)
 {
-   m_context.fail(message);
+   m_impl.fail(message);
 }
 
 void YasLexer::processTokens()
 {
-   if (m_context.hasError())
+   if (m_impl.hasError())
       return reset();
 
-   if (m_context.processEmptyLine(m_out, m_pass))
+   if (m_impl.processEmptyLine(m_out, m_pass))
       return reset();
 
-   if (m_context.processLabel(m_out, m_pass))
+   if (m_impl.processLabel(m_out, m_pass))
       return reset();
 
-   if (m_context.processPosInstr(m_out, m_pass))
+   if (m_impl.processPosInstr(m_out, m_pass))
       return reset();
 
-   if (m_context.processAlignInstr(m_out, m_pass))
+   if (m_impl.processAlignInstr(m_out, m_pass))
       return reset();
 
-   if (m_context.processNormalInstr(m_out, m_pass))
+   if (m_impl.processNormalInstr(m_out, m_pass))
       return reset();
 }
 
 void YasLexer::reset()
 {
-   if (m_context.hasError())
+   if (m_impl.hasError())
       m_hitError = 1;
-   // clear current context to continue the next line
-   m_context.resetLine();
+   m_impl.resetLine();
 }
 
-void Context::addSymbol(const char *name, int p)
+void LexerImpl::addSymbol(const char *name, int p)
 {
    m_symbols.emplace(name, p);
 }
 
-int Context::findSymbol(const char *name)
+int LexerImpl::findSymbol(const char *name)
 {
    auto iter = m_symbols.find(name);
    if (iter == m_symbols.end())
@@ -163,9 +162,9 @@ int Context::findSymbol(const char *name)
    return iter->second;
 }
 
-/* Parse Register from set of m_context.tokens and put into high or low
+/* Parse Register from set of m_impl.tokens and put into high or low
    4 bits of code[codepos] */
-void Context::get_reg(int codepos, int hi)
+void LexerImpl::get_reg(int codepos, int hi)
 {
    int rval = REG_NONE;
    char c;
@@ -196,7 +195,7 @@ void Context::get_reg(int codepos, int hi)
    Ident(Reg)
    Put Reg in low position of current byte, and Number in following bytes
    */
-void Context::get_mem(int codepos)
+void LexerImpl::get_mem(int codepos)
 {
    char rval = REG_NONE;
    word_t val = 0;
@@ -246,7 +245,7 @@ void Context::get_mem(int codepos)
 
 /* Get numeric value of given number of bytes */
 /* Offset indicates value to subtract from number (for PC relative) */
-void Context::get_num(int codepos, int bytes, int offset)
+void LexerImpl::get_num(int codepos, int bytes, int offset)
 {
    word_t val = 0;
    int i;
@@ -270,14 +269,14 @@ void Context::get_num(int codepos, int bytes, int offset)
       decodeBuf[codepos + i] = (val >> (i * 8)) & 0xFF;
 }
 
-void Context::resetLine()
+void LexerImpl::resetLine()
 {
    m_hasError = false;
    m_tokens.clear();
    decodeBuf.clear();
 }
 
-void Context::addToken(token_t type, const char *s, word_t i, char c)
+void LexerImpl::addToken(token_t type, const char *s, word_t i, char c)
 {
    m_tokens.emplace_back(type, s, i, c);
 }
@@ -288,14 +287,14 @@ void Context::addToken(token_t type, const char *s, word_t i, char c)
  *      where HHHH is address
  *      cccccccccccccccccccc is code
  */
-void Context::printNoTokenLine(FILE *out)
+void LexerImpl::printNoTokenLine(FILE *out)
 {
    char outstring[33];
    snprintf(outstring, sizeof(outstring), "                            | ");
    fprintf(out, "%s%s\n", outstring, m_line.c_str());
 }
 
-void Context::print_code(FILE *out, int pos)
+void LexerImpl::print_code(FILE *out, int pos)
 {
    char outstring[33];
    if (pos > 0xFFF)
@@ -325,7 +324,7 @@ void Context::print_code(FILE *out, int pos)
    fprintf(out, "%s%s\n", outstring, m_line.c_str());
 }
 
-void Context::loadLine(const char *s)
+void LexerImpl::loadLine(const char *s)
 {
    assert(s);
    m_line = s;
@@ -334,12 +333,12 @@ void Context::loadLine(const char *s)
    m_lineno++;
 }
 
-bool Context::hasError() const
+bool LexerImpl::hasError() const
 {
    return m_hasError;
 }
 
-void Context::fail(const char *message)
+void LexerImpl::fail(const char *message)
 {
    if (!m_hasError)
    {
@@ -350,34 +349,34 @@ void Context::fail(const char *message)
    m_hasError = true;
 }
 
-token_rec Context::getCurToken() const
+token_rec LexerImpl::getCurToken() const
 {
    return m_tokens.front();
 }
 
-void Context::popToken()
+void LexerImpl::popToken()
 {
    m_tokens.pop_front();
 }
 
-int Context::getAddress() const
+int LexerImpl::getAddress() const
 {
    return m_addr;
 }
 
-void Context::setAddress(int a)
+void LexerImpl::setAddress(int a)
 {
    m_addr = a;
 }
 
-void Context::initDecodeBuf(int instrSize, uint8_t code)
+void LexerImpl::initDecodeBuf(int instrSize, uint8_t code)
 {
    decodeBuf.resize(instrSize, 0);
    decodeBuf[0] = code;
    decodeBuf[1] = HPACK(REG_NONE, REG_NONE);
 }
 
-int Context::processEmptyLine(FILE *out, int pass)
+int LexerImpl::processEmptyLine(FILE *out, int pass)
 {
    if (m_tokens.empty())
    {
@@ -388,7 +387,7 @@ int Context::processEmptyLine(FILE *out, int pass)
    return CONTINUE;
 }
 
-int Context::processLabel(FILE *out, int pass)
+int LexerImpl::processLabel(FILE *out, int pass)
 {
    if (getCurToken().type != TOK_IDENT)
       return CONTINUE;
@@ -414,7 +413,7 @@ int Context::processLabel(FILE *out, int pass)
    return CONTINUE;
 }
 
-int Context::processPosInstr(FILE *out, int pass)
+int LexerImpl::processPosInstr(FILE *out, int pass)
 {
    if (getCurToken().type != TOK_INSTR)
    {
@@ -440,7 +439,7 @@ int Context::processPosInstr(FILE *out, int pass)
    return DONE;
 }
 
-int Context::processAlignInstr(FILE *out, int pass)
+int LexerImpl::processAlignInstr(FILE *out, int pass)
 {
    if (getCurToken().type != TOK_INSTR)
    {
@@ -467,7 +466,7 @@ int Context::processAlignInstr(FILE *out, int pass)
    return DONE;
 }
 
-int Context::processNormalInstr(FILE *out, int pass)
+int LexerImpl::processNormalInstr(FILE *out, int pass)
 {
    if (getCurToken().type != TOK_INSTR)
    {

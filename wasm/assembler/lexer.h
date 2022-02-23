@@ -50,11 +50,10 @@ struct symbol_t
    int pos;
 };
 
-// class for lexer context, will be updated during processing a line
-class Context
+class LexerImpl
 {
 public:
-   Context() : m_lineno(0), m_hasError(false), m_addr(0) {}
+   LexerImpl() : m_lineno(0), m_hasError(false), m_addr(0) {}
 
    void loadLine(const char *s);
    void resetLine();
@@ -126,8 +125,6 @@ private:
    FILE *m_out;
 
    int m_pass;
-   // set when any error happened
    int m_hitError;
-   // current processing data
-   Context m_context;
+   LexerImpl m_impl;
 };
