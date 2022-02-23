@@ -119,10 +119,8 @@ void YasLexer::error(const char *message)
 void YasLexer::processTokens()
 {
    // Empty line, to start next line
-   if (m_context.done())
+   if (m_context.processEmptyLine(m_out, m_pass))
    {
-      if (m_pass > 1)
-         m_context.printNoTokenLine(m_out);
       resetLine();
       return;
    }
@@ -142,9 +140,8 @@ void YasLexer::processTokens()
    }
 
    // it should be instruction if the token is not label
-   if (m_context.getCurToken().type != TOK_INSTR)
+   if (m_context.startProcessInstr())
    {
-      m_context.fail("Bad Instruction");
       resetLine();
       return;
    }
@@ -455,11 +452,6 @@ void Context::popToken()
    m_tokens.pop_front();
 }
 
-bool Context::done() const
-{
-   return m_tokens.empty();
-}
-
 int Context::getAddress() const
 {
    return m_addr;
@@ -475,6 +467,17 @@ void Context::initDecodeBuf(int instrSize, uint8_t code)
    decodeBuf.resize(instrSize, 0);
    decodeBuf[0] = code;
    decodeBuf[1] = HPACK(REG_NONE, REG_NONE);
+}
+
+int Context::processEmptyLine(FILE *out, int pass)
+{
+   if (m_tokens.empty())
+   {
+      if (pass > 1)
+         printNoTokenLine(out);
+      return DONE;
+   }
+   return CONTINUE;
 }
 
 int Context::processLabel(FILE *out, int pass)
@@ -493,13 +496,23 @@ int Context::processLabel(FILE *out, int pass)
    if (pass == 1)
       addSymbol(labelToken.sval.c_str(), getAddress());
    popToken();
-   if (done())
+   if (m_tokens.empty())
    {
       if (pass > 1)
          print_code(out, getAddress());
       return DONE;
    }
 
+   return CONTINUE;
+}
+
+int Context::startProcessInstr()
+{
+   if (getCurToken().type != TOK_INSTR)
+   {
+      fail("Bad Instruction");
+      return ERR;
+   }
    return CONTINUE;
 }
 

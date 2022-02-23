@@ -63,7 +63,6 @@ public:
    void loadLine(const char *s);
 
    bool hasError() const;
-   bool done() const;
 
    token_rec getCurToken() const;
    void popToken();
@@ -79,7 +78,10 @@ public:
 
    void print_code(FILE *out, int pos);
    void printNoTokenLine(FILE *out);
+
+   int processEmptyLine(FILE *out, int pass);
    int processLabel(FILE *out, int pass);
+   int startProcessInstr();
    int processPosInstr(FILE *out, int pass);
    int processAlignInstr(FILE *out, int pass);
 
