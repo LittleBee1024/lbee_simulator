@@ -96,6 +96,7 @@ public:
 
 private:
    void reset();
+   void setYasIn();
    void resetYasIn();
 
 private:

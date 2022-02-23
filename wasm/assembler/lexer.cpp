@@ -42,8 +42,7 @@ int YasLexer::parse(FILE *in, FILE *out)
       error("Can't open input file");
       return ERROR;
    }
-   // yasin is a global variable defined in flex
-   yasin = m_in;
+   setYasIn();
 
    m_out = out;
    if (!m_out)
@@ -62,6 +61,12 @@ int YasLexer::parse(FILE *in, FILE *out)
    resetYasIn();
    yaslex(this);
    return DONE;
+}
+
+void YasLexer::setYasIn()
+{
+   // yasin is a global variable defined in flex
+   yasin = m_in;
 }
 
 void YasLexer::resetYasIn()
