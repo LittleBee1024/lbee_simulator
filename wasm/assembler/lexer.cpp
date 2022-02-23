@@ -349,13 +349,6 @@ void LexerImpl::fail(const char *message)
    m_hasError = true;
 }
 
-void LexerImpl::initDecodeBuf(int instrSize, uint8_t code)
-{
-   decodeBuf.resize(instrSize, 0);
-   decodeBuf[0] = code;
-   decodeBuf[1] = HPACK(REG_NONE, REG_NONE);
-}
-
 int LexerImpl::processEmptyLine(FILE *out, int pass)
 {
    if (m_tokens.empty())
@@ -460,19 +453,20 @@ int LexerImpl::processNormalInstr(FILE *out, int pass)
       fail("Invalid Instruction");
       return ERR;
    }
+   // get expected instruction token, pop it from the deque
+   m_tokens.pop_front();
    int instrSize = instr->bytes;
    int instrAddr = m_addr;
    m_addr += instrSize;
 
    // don't process instruction in pass 1
    if (pass == 1)
-   {
       return DONE;
-   }
 
    // process the instructions
-   m_tokens.pop_front();
-   initDecodeBuf(instrSize, instr->code);
+   decodeBuf.resize(instrSize, 0);
+   decodeBuf[0] = instr->code;
+   decodeBuf[1] = HPACK(REG_NONE, REG_NONE);
    switch (instr->arg1)
    {
    case R_ARG:

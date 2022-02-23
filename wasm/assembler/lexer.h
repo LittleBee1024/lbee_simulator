@@ -76,8 +76,6 @@ private:
    void get_mem(int codepos);
    void get_num(int codepos, int bytes, int offset);
 
-   void initDecodeBuf(int instrSize, uint8_t code);
-
    void print_code(FILE *out, int pos);
    void printNoTokenLine(FILE *out);
 
