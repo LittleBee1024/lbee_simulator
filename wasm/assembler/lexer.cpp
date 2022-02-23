@@ -59,7 +59,7 @@ int YasLexer::parse()
    m_pass = 2;
    resetYasIn();
    yaslex(this);
-   return DONE;
+   return SUCCESS;
 }
 
 void YasLexer::setYasIn()
@@ -339,6 +339,10 @@ void LexerImpl::fail(const char *message)
 {
    if (!m_hasError)
    {
+      fprintf(m_out, "Error on line %d: %s\n", m_lineno, message);
+      fprintf(m_out, "Line %d, Byte 0x%.4x: %s\n",
+              m_lineno, m_addr, m_line.c_str());
+
       fprintf(stderr, "Error on line %d: %s\n", m_lineno, message);
       fprintf(stderr, "Line %d, Byte 0x%.4x: %s\n",
               m_lineno, m_addr, m_line.c_str());
@@ -354,13 +358,13 @@ int LexerImpl::processEmptyLine(int pass)
          printLine();
       return DONE;
    }
-   return CONTINUE;
+   return SUCCESS;
 }
 
 int LexerImpl::processLabel(int pass)
 {
    if (m_tokens.front().type != TOK_IDENT)
-      return CONTINUE;
+      return SUCCESS;
 
    Token labelToken = m_tokens.front();
    m_tokens.pop_front();
@@ -380,7 +384,7 @@ int LexerImpl::processLabel(int pass)
       return DONE;
    }
 
-   return CONTINUE;
+   return SUCCESS;
 }
 
 int LexerImpl::processPosInstr(int pass)
@@ -392,7 +396,7 @@ int LexerImpl::processPosInstr(int pass)
    }
 
    if (strcmp(m_tokens.front().sval.c_str(), ".pos") != 0)
-      return CONTINUE;
+      return SUCCESS;
 
    m_tokens.pop_front();
    if (m_tokens.front().type != TOK_NUM)
@@ -418,7 +422,7 @@ int LexerImpl::processAlignInstr(int pass)
    }
 
    if (strcmp(m_tokens.front().sval.c_str(), ".align") != 0)
-      return CONTINUE;
+      return SUCCESS;
 
    int a;
    m_tokens.pop_front();

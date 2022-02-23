@@ -57,20 +57,21 @@ static bool endsWith(const std::string &str, const std::string &suffix)
           0 == str.compare(str.size() - suffix.size(), suffix.size(), suffix);
 }
 
-void demo()
+int demo()
 {
    std::string buf(s_code);
    FILE *in = fmemopen(&buf[0], buf.size(), "r");
    FILE *out = fopen("demo.yo", "w");
 
-   (YasLexer(in, out).parse() == ERROR) ?
-      printf("Yas Lexer parse has error\n") :
-      printf("Yas Lexer parse is done\n");
+   int ret = YasLexer(in, out).parse();
+   (ret == ERROR) ? printf("Yas Lexer parse has error\n") : printf("Yas Lexer parse is done\n");
 
    if (!in)
       fclose(in);
    if (!out)
       fclose(out);
+
+   return ret;
 }
 
 int main(int argc, char *argv[])
@@ -78,8 +79,7 @@ int main(int argc, char *argv[])
    if (argc == 1)
    {
       printf("Run demo\n");
-      demo();
-      return 0;
+      return demo();
    }
 
    std::string infname = argv[1];
@@ -90,14 +90,13 @@ int main(int argc, char *argv[])
    std::string outfname = infname.substr(0, infname.find_last_of('.')) + ".yo";
    FILE *out = fopen(outfname.c_str(), "w");
 
-   (YasLexer(in, out).parse() == ERROR) ?
-      printf("Yas Lexer parse has error\n") :
-      printf("Yas Lexer parse is done\n");
+   int ret = YasLexer(in, out).parse();
+   (ret == ERROR) ? printf("Yas Lexer parse has error\n") : printf("Yas Lexer parse is done\n");
 
    if (!in)
       fclose(in);
    if (!out)
       fclose(out);
 
-   return 0;
+   return ret;
 }

@@ -9,7 +9,7 @@
 
 #define DONE 1
 #define ERROR -1
-#define CONTINUE 0
+#define SUCCESS 0
 
 typedef enum
 {
