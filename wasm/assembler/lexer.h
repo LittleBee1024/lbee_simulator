@@ -80,6 +80,8 @@ public:
    void print_code(FILE *out, int pos);
    void printNoTokenLine(FILE *out);
    int processLabel(FILE *out, int pass);
+   int processPosInstr(FILE *out, int pass);
+   int processAlignInstr(FILE *out, int pass);
 
 private:
    int findSymbol(const char *name);

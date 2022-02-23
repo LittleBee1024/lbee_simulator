@@ -15,7 +15,7 @@ extern int yaslex(YasLexer *);
 
 #define DONE 1
 #define ERR -1
-#define SUCCESS 0
+#define CONTINUE 0
 
 namespace
 {
@@ -150,42 +150,15 @@ void YasLexer::processTokens()
    }
 
    // process .pos instruction
-   if (strcmp(m_context.getCurToken().sval.c_str(), ".pos") == 0)
+   if (m_context.processPosInstr(m_out, m_pass))
    {
-      m_context.popToken();
-      if (m_context.getCurToken().type != TOK_NUM)
-      {
-         m_context.fail("Invalid Address");
-         resetLine();
-         return;
-      }
-
-      m_context.setAddress(m_context.getCurToken().ival);
-      if (m_pass > 1)
-      {
-         m_context.print_code(m_out, m_context.getAddress());
-      }
       resetLine();
       return;
    }
 
    // process .align instruction
-   if (strcmp(m_context.getCurToken().sval.c_str(), ".align") == 0)
+   if (m_context.processAlignInstr(m_out, m_pass))
    {
-      int a;
-      m_context.popToken();
-      if (m_context.getCurToken().type != TOK_NUM || (a = m_context.getCurToken().ival) <= 0)
-      {
-         m_context.fail("Invalid Alignment");
-         resetLine();
-         return;
-      }
-      m_context.setAddress(((m_context.getAddress() + a - 1) / a) * a);
-
-      if (m_pass > 1)
-      {
-         m_context.print_code(m_out, m_context.getAddress());
-      }
       resetLine();
       return;
    }
@@ -456,32 +429,6 @@ void Context::loadLine(const char *s)
    m_lineno++;
 }
 
-int Context::processLabel(FILE *out, int pass)
-{
-   if (getCurToken().type != TOK_IDENT)
-      return SUCCESS;
-
-   token_rec labelToken = getCurToken();
-   popToken();
-   if (getCurToken().type != TOK_PUNCT || getCurToken().cval != ':')
-   {
-      fail("Missing Colon");
-      return ERR;
-   }
-
-   if (pass == 1)
-      addSymbol(labelToken.sval.c_str(), getAddress());
-   popToken();
-   if (done())
-   {
-      if (pass > 1)
-         print_code(out, getAddress());
-      return DONE;
-   }
-
-   return SUCCESS;
-}
-
 bool Context::hasError() const
 {
    return m_hasError;
@@ -528,4 +475,71 @@ void Context::initDecodeBuf(int instrSize, uint8_t code)
    decodeBuf.resize(instrSize, 0);
    decodeBuf[0] = code;
    decodeBuf[1] = HPACK(REG_NONE, REG_NONE);
+}
+
+int Context::processLabel(FILE *out, int pass)
+{
+   if (getCurToken().type != TOK_IDENT)
+      return CONTINUE;
+
+   token_rec labelToken = getCurToken();
+   popToken();
+   if (getCurToken().type != TOK_PUNCT || getCurToken().cval != ':')
+   {
+      fail("Missing Colon");
+      return ERR;
+   }
+
+   if (pass == 1)
+      addSymbol(labelToken.sval.c_str(), getAddress());
+   popToken();
+   if (done())
+   {
+      if (pass > 1)
+         print_code(out, getAddress());
+      return DONE;
+   }
+
+   return CONTINUE;
+}
+
+int Context::processPosInstr(FILE *out, int pass)
+{
+   if (strcmp(getCurToken().sval.c_str(), ".pos") != 0)
+      return CONTINUE;
+
+   popToken();
+   if (getCurToken().type != TOK_NUM)
+   {
+      fail("Invalid Address");
+      return ERR;
+   }
+
+   setAddress(getCurToken().ival);
+   if (pass > 1)
+   {
+      print_code(out, getAddress());
+   }
+   return DONE;
+}
+
+int Context::processAlignInstr(FILE *out, int pass)
+{
+   if (strcmp(getCurToken().sval.c_str(), ".align") != 0)
+      return CONTINUE;
+
+   int a;
+   popToken();
+   if (getCurToken().type != TOK_NUM || (a = getCurToken().ival) <= 0)
+   {
+      fail("Invalid Alignment");
+      return ERR;
+   }
+
+   setAddress(((getAddress() + a - 1) / a) * a);
+   if (pass > 1)
+   {
+      print_code(out, getAddress());
+   }
+   return DONE;
 }
