@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <string>
 
+namespace ASSEMBLER
+{
+
 class InputInterface
 {
 public:
@@ -38,3 +41,5 @@ private:
    std::string m_buf;
    FILE *m_in;
 };
+
+}

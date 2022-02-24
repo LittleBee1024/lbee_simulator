@@ -4,6 +4,9 @@
 #include <sstream>
 #include <string>
 
+namespace ASSEMBLER
+{
+
 class OutputInterface
 {
 public:
@@ -38,3 +41,5 @@ public:
 private:
    std::stringstream m_out;
 };
+
+}

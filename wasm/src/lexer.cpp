@@ -8,24 +8,27 @@
  * Variables and functions from flex
  ***************************************/
 extern FILE *yasin;
-extern int yaslex(YasLexer *);
+extern int yaslex(ASSEMBLER::YasLexer *);
 
 namespace
 {
 
-   void hexstuff(char *dest, word_t value, int len)
+void hexstuff(char *dest, word_t value, int len)
+{
+   int i;
+   for (i = 0; i < len; i++)
    {
-      int i;
-      for (i = 0; i < len; i++)
-      {
-         char c;
-         int h = (value >> 4 * i) & 0xF;
-         c = h < 10 ? h + '0' : h - 10 + 'a';
-         dest[len - i - 1] = c;
-      }
+      char c;
+      int h = (value >> 4 * i) & 0xF;
+      c = h < 10 ? h + '0' : h - 10 + 'a';
+      dest[len - i - 1] = c;
    }
+}
 
 }
+
+namespace ASSEMBLER
+{
 
 YasLexer::YasLexer(InputInterface &in, OutputInterface &out) :
    m_pass(0),
@@ -502,4 +505,6 @@ int LexerImpl::processNormalInstr(int pass)
    printCode();
    m_addr += instr->bytes;
    return DONE;
+}
+
 }

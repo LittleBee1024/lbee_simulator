@@ -61,10 +61,10 @@ static bool endsWith(const std::string &str, const std::string &suffix)
 
 int demo()
 {
-   MemIn in(s_code);
-   MemOut out;
+   ASSEMBLER::MemIn in(s_code);
+   ASSEMBLER::MemOut out;
 
-   int ret = YasLexer(in, out).parse();
+   int ret = ASSEMBLER::YasLexer(in, out).parse();
    (ret == ERROR) ? printf("Yas Lexer parse has error\n") : printf("Yas Lexer parse is done\n");
 
    std::ofstream fileOut("demo.yo");
@@ -85,12 +85,12 @@ int main(int argc, char *argv[])
    std::string infname = argv[1];
    if (!endsWith(infname, ".ys"))
       usage(argv[0]);
-   FileIn in(infname.c_str());
+   ASSEMBLER::FileIn in(infname.c_str());
 
    std::string outfname = infname.substr(0, infname.find_last_of('.')) + ".yo";
-   FileOut out(outfname.c_str());
+   ASSEMBLER::FileOut out(outfname.c_str());
 
-   int ret = YasLexer(in, out).parse();
+   int ret = ASSEMBLER::YasLexer(in, out).parse();
    (ret == ERROR) ? printf("Yas Lexer parse has error\n") : printf("Yas Lexer parse is done\n");
 
    return ret;

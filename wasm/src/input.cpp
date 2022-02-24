@@ -1,5 +1,8 @@
 #include "input.h"
 
+namespace ASSEMBLER
+{
+
 FileIn::FileIn(const char *filename)
 {
    m_in = fopen(filename, "r");
@@ -31,4 +34,6 @@ MemIn::~MemIn()
 FILE *MemIn::get()
 {
    return m_in;
+}
+
 }

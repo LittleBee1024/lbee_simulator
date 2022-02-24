@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+namespace ASSEMBLER
+{
+
 FileOut::FileOut(const char *filename) :
    m_out(filename)
 {
@@ -36,4 +39,6 @@ void MemOut::print(const char *format, ...)
 std::string MemOut::dump() const
 {
    return m_out.str();
+}
+
 }

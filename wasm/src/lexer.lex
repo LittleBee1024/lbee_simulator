@@ -1,7 +1,7 @@
 /* Grammar for Y86-64 Assembler */
 %{
 #include "lexer.h"
-#define YY_DECL int yaslex(YasLexer *lexer)
+#define YY_DECL int yaslex(ASSEMBLER::YasLexer *lexer)
 %}
 
 %option noinput

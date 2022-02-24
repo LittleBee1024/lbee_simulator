@@ -9,6 +9,9 @@
 #include <vector>
 #include <unordered_map>
 
+namespace ASSEMBLER
+{
+
 #define DONE 1
 #define ERROR -1
 #define SUCCESS 0
@@ -107,3 +110,5 @@ private:
    bool m_hitError;
    LexerImpl m_impl;
 };
+
+}
