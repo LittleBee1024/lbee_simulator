@@ -3,31 +3,30 @@ CFLAGS=-Wall -g
 # http://dinosaur.compilertools.net/flex/manpage.html
 LEX=flex
 
+BUILDDIR=./build
+
 LEX_GEN=lexer_gen.cpp
-TARGET=yas
+SRCS := isa.cpp lexer.cpp output.cpp input.cpp
+OBJS := $(LEX_GEN:%.cpp=$(BUILDDIR)/%.o) $(SRCS:%.cpp=$(BUILDDIR)/%.o)
 
-SRCS := isa.cpp lexer.cpp main.cpp output.cpp input.cpp
-OBJS := $(LEX_GEN:.cpp=.o) $(SRCS:.cpp=.o)
+TEST_YAS=test_yas
+TEST_YAS_SRC  := test_yas.cpp
+TEST_YAS_OBJS := $(TEST_YAS_SRC:%.cpp=$(BUILDDIR)/%.o)
 
-all: clean $(TARGET)
+all: clean $(TEST_YAS)
 
 $(LEX_GEN): lexer.lex
 	$(LEX) -P yas -o $@ $<
 
-%.o: %.cpp
-	$(CC) $(CFLAGS) -c $<
+$(BUILDDIR)/%.o: %.cpp
+	@mkdir -p '$(@D)'
+	$(CC) $(CFLAGS) -c $< -o $@
 
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) $^ -o $@
+$(TEST_YAS): $(OBJS) $(TEST_YAS_OBJS)
+	$(CC) $(CFLAGS) $^ -o $(BUILDDIR)/$@
 
-run:
-	./$(TARGET) code.ys && diff code.yo code.yo.golden && cat code.yo
-
-demo:
-	./$(TARGET) && diff demo.yo code.yo.golden
-
-mem_check:
-	valgrind ./$(TARGET) --show-reachable=no
+run_yas:
+	$(BUILDDIR)/$(TEST_YAS) code.ys && diff code.yo code.yo.golden && cat code.yo
 
 clean:
-	rm -rf $(TARGET) $(LEX_GEN) *.o *.yo
+	rm -rf $(LEX_GEN) $(BUILDDIR) *.o *.yo
