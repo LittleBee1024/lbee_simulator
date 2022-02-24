@@ -6,7 +6,7 @@ LEX=flex
 BUILDDIR=./build
 
 LEX_GEN=lexer_gen.cpp
-SRCS := isa.cpp lexer.cpp output.cpp input.cpp
+SRCS := isa.cpp lexer.cpp output.cpp input.cpp api.cpp
 OBJS := $(LEX_GEN:%.cpp=$(BUILDDIR)/%.o) $(SRCS:%.cpp=$(BUILDDIR)/%.o)
 
 YAS=yas

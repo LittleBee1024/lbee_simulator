@@ -1,8 +1,10 @@
 #include "lexer.h"
 #include "input.h"
 #include "output.h"
+#include "api.h"
 
 #include <fstream>
+#include <iostream>
 #include <stdio.h>
 #include <string>
 
@@ -59,19 +61,10 @@ static bool endsWith(const std::string &str, const std::string &suffix)
           0 == str.compare(str.size() - suffix.size(), suffix.size(), suffix);
 }
 
-int demo()
+void demo()
 {
-   ASSEMBLER::MemIn in(s_code);
-   ASSEMBLER::MemOut out;
-
-   int ret = ASSEMBLER::YasLexer(in, out).parse();
-   (ret == ERROR) ? printf("Yas Lexer parse has error\n") : printf("Yas Lexer parse is done\n");
-
-   std::ofstream fileOut("demo.yo");
-   fileOut << out.dump();
-   fileOut.close();
-
-   return ret;
+   std::string code = LBEE_SIMULATOR::assemble(s_code);
+   std::cout << code;
 }
 
 int main(int argc, char *argv[])
@@ -79,7 +72,8 @@ int main(int argc, char *argv[])
    if (argc == 1)
    {
       printf("Run demo\n");
-      return demo();
+      demo();
+      return 0;
    }
 
    std::string infname = argv[1];
