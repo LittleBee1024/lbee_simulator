@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ostream>
+#include <fstream>
 
 class OutputInterface
 {
@@ -11,16 +11,16 @@ public:
    virtual void print(const char *format, ...) const = 0;
 };
 
-class Output : public OutputInterface
+class FileOut : public OutputInterface
 {
 public:
-   explicit Output(std::ostream &out) : m_out(out) {};
-   Output(const Output &) = delete;
-   Output &operator=(const Output &) = delete;
-   ~Output() override = default;
+   explicit FileOut(const char *filename);
+   FileOut(const FileOut &) = delete;
+   FileOut &operator=(const FileOut &) = delete;
+   ~FileOut() override;
 
    void print(const char *format, ...) const override;
 
 private:
-   std::ostream &m_out;
+   mutable std::ofstream m_out;
 };

@@ -3,7 +3,17 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-void Output::print(const char *format, ...) const
+FileOut::FileOut(const char *filename) :
+   m_out(filename)
+{
+}
+
+FileOut::~FileOut()
+{
+   m_out.close();
+}
+
+void FileOut::print(const char *format, ...) const
 {
    char buffer[1024];
    va_list args;

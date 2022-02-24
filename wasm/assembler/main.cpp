@@ -62,16 +62,13 @@ int demo()
 {
    std::string buf(s_code);
    FILE *in = fmemopen(&buf[0], buf.size(), "r");
-
-   std::ofstream ofs("demo.yo");
-   Output out(ofs);
+   FileOut out("demo.yo");
 
    int ret = YasLexer(in, out).parse();
    (ret == ERROR) ? printf("Yas Lexer parse has error\n") : printf("Yas Lexer parse is done\n");
 
    if (!in)
       fclose(in);
-   ofs.close();
 
    return ret;
 }
@@ -90,15 +87,13 @@ int main(int argc, char *argv[])
    FILE *in = fopen(infname.c_str(), "r");
 
    std::string outfname = infname.substr(0, infname.find_last_of('.')) + ".yo";
-   std::ofstream ofs(outfname.c_str());
-   Output out(ofs);
+   FileOut out(outfname.c_str());
 
    int ret = YasLexer(in, out).parse();
    (ret == ERROR) ? printf("Yas Lexer parse has error\n") : printf("Yas Lexer parse is done\n");
 
    if (!in)
       fclose(in);
-   ofs.close();
 
    return ret;
 }

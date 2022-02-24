@@ -27,9 +27,10 @@ namespace
 
 }
 
-YasLexer::YasLexer(FILE *in, const Output &out) : m_pass(0),
-                                                  m_hitError(false),
-                                                  m_impl(out)
+YasLexer::YasLexer(FILE *in, const OutputInterface &out) :
+   m_pass(0),
+   m_hitError(false),
+   m_impl(out)
 {
    setYasIn(in);
 }

@@ -41,7 +41,7 @@ struct Token
 class LexerImpl
 {
 public:
-   explicit LexerImpl(const Output &out) : m_out(out), m_lineno(0), m_hasError(false), m_addr(0) {}
+   explicit LexerImpl(const OutputInterface &out) : m_out(out), m_lineno(0), m_hasError(false), m_addr(0) {}
 
    void loadLine(const char *s);
    void resetLine();
@@ -68,7 +68,7 @@ private:
    void printLine();
 
 private:
-   const Output &m_out;
+   const OutputInterface &m_out;
    std::unordered_map<std::string, int> m_symbols;
    int m_lineno;
    std::string m_line;
@@ -81,7 +81,7 @@ private:
 class YasLexer
 {
 public:
-   YasLexer(FILE *in, const Output &out);
+   YasLexer(FILE *in, const OutputInterface &out);
    int parse();
 
 public:
