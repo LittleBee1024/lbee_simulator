@@ -1,6 +1,7 @@
 #include "lexer.h"
+#include "output.h"
 
-#include <exception>
+#include <fstream>
 #include <stdio.h>
 #include <string>
 
@@ -61,15 +62,16 @@ int demo()
 {
    std::string buf(s_code);
    FILE *in = fmemopen(&buf[0], buf.size(), "r");
-   FILE *out = fopen("demo.yo", "w");
+
+   std::ofstream ofs("demo.yo");
+   Output out(ofs);
 
    int ret = YasLexer(in, out).parse();
    (ret == ERROR) ? printf("Yas Lexer parse has error\n") : printf("Yas Lexer parse is done\n");
 
    if (!in)
       fclose(in);
-   if (!out)
-      fclose(out);
+   ofs.close();
 
    return ret;
 }
@@ -88,15 +90,15 @@ int main(int argc, char *argv[])
    FILE *in = fopen(infname.c_str(), "r");
 
    std::string outfname = infname.substr(0, infname.find_last_of('.')) + ".yo";
-   FILE *out = fopen(outfname.c_str(), "w");
+   std::ofstream ofs(outfname.c_str());
+   Output out(ofs);
 
    int ret = YasLexer(in, out).parse();
    (ret == ERROR) ? printf("Yas Lexer parse has error\n") : printf("Yas Lexer parse is done\n");
 
    if (!in)
       fclose(in);
-   if (!out)
-      fclose(out);
+   ofs.close();
 
    return ret;
 }

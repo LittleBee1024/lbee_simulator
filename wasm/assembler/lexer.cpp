@@ -27,29 +27,15 @@ namespace
 
 }
 
-YasLexer::YasLexer(FILE *in, FILE *out) : m_in(in),
-                                          m_out(out),
-                                          m_pass(0),
-                                          m_hitError(false),
-                                          m_impl(out)
+YasLexer::YasLexer(FILE *in, const Output &out) : m_pass(0),
+                                                  m_hitError(false),
+                                                  m_impl(out)
 {
-   setYasIn();
+   setYasIn(in);
 }
 
 int YasLexer::parse()
 {
-   if (!m_in)
-   {
-      error("Can't open input file");
-      return ERROR;
-   }
-
-   if (!m_out)
-   {
-      error("Can't open output file");
-      return ERROR;
-   }
-
    m_pass = 1;
    resetYasIn();
    yaslex(this);
@@ -62,15 +48,17 @@ int YasLexer::parse()
    return SUCCESS;
 }
 
-void YasLexer::setYasIn()
+void YasLexer::setYasIn(FILE *in)
 {
+   if (!in)
+      error("Can't open input file");
    // yasin is a global variable defined in flex
-   yasin = m_in;
+   yasin = in;
 }
 
 void YasLexer::resetYasIn()
 {
-   fseek(m_in, 0, SEEK_SET);
+   fseek(yasin, 0, SEEK_SET);
 }
 
 void YasLexer::load(const char *s)
@@ -284,7 +272,7 @@ void LexerImpl::printLine()
 {
    char outstring[33];
    snprintf(outstring, sizeof(outstring), "                            | ");
-   fprintf(m_out, "%s%s\n", outstring, m_line.c_str());
+   m_out.print("%s%s\n", outstring, m_line.c_str());
 }
 
 /**
@@ -316,7 +304,7 @@ void LexerImpl::printCode()
       for (size_t i = 0; i < decodeBuf.size(); i++)
          hexstuff(outstring + 7 + 2 * i, decodeBuf[i] & 0xFF, 2);
    }
-   fprintf(m_out, "%s%s\n", outstring, m_line.c_str());
+   m_out.print("%s%s\n", outstring, m_line.c_str());
 }
 
 void LexerImpl::loadLine(const char *s)
@@ -339,13 +327,11 @@ void LexerImpl::fail(const char *message)
 {
    if (!m_hasError)
    {
-      fprintf(m_out, "Error on line %d: %s\n", m_lineno, message);
-      fprintf(m_out, "Line %d, Byte 0x%.4x: %s\n",
-              m_lineno, m_addr, m_line.c_str());
+      m_out.print("Error on line %d: %s\n", m_lineno, message);
+      m_out.print("Line %d, Byte 0x%.4x: %s\n", m_lineno, m_addr, m_line.c_str());
 
       fprintf(stderr, "Error on line %d: %s\n", m_lineno, message);
-      fprintf(stderr, "Line %d, Byte 0x%.4x: %s\n",
-              m_lineno, m_addr, m_line.c_str());
+      fprintf(stderr, "Line %d, Byte 0x%.4x: %s\n", m_lineno, m_addr, m_line.c_str());
    }
    m_hasError = true;
 }

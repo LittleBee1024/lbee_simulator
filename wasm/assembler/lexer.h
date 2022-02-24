@@ -1,6 +1,7 @@
 #pragma once
 
 #include "isa.h"
+#include "output.h"
 
 #include <deque>
 #include <string>
@@ -40,7 +41,7 @@ struct Token
 class LexerImpl
 {
 public:
-   explicit LexerImpl(FILE *out) : m_out(out), m_lineno(0), m_hasError(false), m_addr(0) {}
+   explicit LexerImpl(const Output &out) : m_out(out), m_lineno(0), m_hasError(false), m_addr(0) {}
 
    void loadLine(const char *s);
    void resetLine();
@@ -67,7 +68,7 @@ private:
    void printLine();
 
 private:
-   FILE *m_out;
+   const Output &m_out;
    std::unordered_map<std::string, int> m_symbols;
    int m_lineno;
    std::string m_line;
@@ -80,7 +81,7 @@ private:
 class YasLexer
 {
 public:
-   YasLexer(FILE *in, FILE *out);
+   YasLexer(FILE *in, const Output &out);
    int parse();
 
 public:
@@ -97,13 +98,10 @@ public:
 
 private:
    void reset();
-   void setYasIn();
+   void setYasIn(FILE *in);
    void resetYasIn();
 
 private:
-   FILE *m_in;
-   FILE *m_out;
-
    int m_pass;
    bool m_hitError;
    LexerImpl m_impl;
