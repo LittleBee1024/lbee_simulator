@@ -15,13 +15,12 @@
 #   endif
 #endif
 
-#include "demo.h"
+#include "src/api.h"
 
-EM_PORT_API(int) Sub(int a, int b) {
-   return DEMO::sub(a, b);
-}
-
-EM_PORT_API(const char*) ToUppercase(const char* in) {
-   return DEMO::toUppercase(in);
+EM_PORT_API(const char*) Assemble(const char* in) {
+   static std::string buf;
+   buf.clear();
+   buf = LBEE_SIMULATOR::assemble(in);
+   return buf.c_str();
 }
 

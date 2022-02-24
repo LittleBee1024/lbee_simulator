@@ -27,6 +27,7 @@ body {
 .el-main {
    text-align: center;
    min-height: 30em;
+   font-family: monospace;
 }
 
 .result {
@@ -38,7 +39,6 @@ body {
    overflow: auto;
    width: auto;
    height: 20em;
-   white-space: pre-line;
 }
 
 #form-button .el-form-item__content {

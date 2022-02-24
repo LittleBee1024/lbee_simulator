@@ -44,11 +44,11 @@ const vWasm = {
       }
    },
    methods: {
-      toUppercase() {
-         this.output = UTF8ToString(Module._ToUppercase(allocateUTF8OnStack(this.input)))
+      convert() {
+         this.output = UTF8ToString(Module._Assemble(allocateUTF8OnStack(this.input)))
       },
-      clear() {
-         this.input = ''
+      reset() {
+         this.input = defaultCode
          this.output = ''
       }
    },
@@ -59,20 +59,20 @@ const vWasm = {
                <el-input
                   v-model="input"
                   type="textarea"
-                  placeholder="this.input"
+                  placeholder="Please input assembly code"
                   rows="10"
                />
             </el-form-item>
             <el-form-item id="form-button">
-               <el-button type="primary" plain @click="toUppercase">Submit</el-button>
-               <el-button type="warning" plain @click="clear">Clear</el-button>
+               <el-button type="primary" plain @click="convert">Submit</el-button>
+               <el-button type="warning" plain @click="reset">Reset</el-button>
             </el-form-item>
          </el-form>
 
          <el-divider>Result</el-divider>
 
          <div class="result">
-            <p> {{output}} </p>
+            <pre>{{output}}</pre>
          </div>
       </div>
    `

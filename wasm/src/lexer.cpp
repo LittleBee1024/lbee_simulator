@@ -457,7 +457,7 @@ int LexerImpl::processNormalInstr(int pass)
    // process the instructions
    decodeBuf.resize(instr->bytes, 0);
    decodeBuf[0] = instr->code;
-   decodeBuf[1] = HPACK(REG_NONE, REG_NONE);
+   decodeBuf[1] = static_cast<char>(HPACK(REG_NONE, REG_NONE));
    switch (instr->arg1)
    {
    case R_ARG:

@@ -22,6 +22,8 @@ FILE *FileIn::get()
 MemIn::MemIn(const char *buf):
    m_buf(buf)
 {
+   // add new line character to support one line input
+   m_buf.append("\n");
    m_in = fmemopen(&m_buf[0], m_buf.size(), "r");
 }
 

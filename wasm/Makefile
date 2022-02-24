@@ -1,18 +1,30 @@
 CC     = em++
-CFLAGS = -Wall -g
+CFLAGS = -Wall -Wno-misleading-indentation -g
 LFLAGS = --no-entry -s 'EXPORTED_FUNCTIONS=['_malloc', '_free']' -g
 
+BUILDDIR=./build
+SRCDIR=./src
+
 TARGET = web_api
-SRC    = $(wildcard *.cpp)
-OBJ    = $(SRC:.cpp=.o)
+SRCS = isa.cpp lexer_gen.cpp lexer.cpp output.cpp input.cpp api.cpp
+OBJS = $(SRCS:%.cpp=$(BUILDDIR)/%.o)
 
-all: $(TARGET)
+all: clean $(TARGET)
 
-$(TARGET): $(OBJ)
-	$(CC) $(LFLAGS) $^ -o $@.js
+.PHONY: all $(TARGET) clean
 
-%.o: %.cpp
+$(BUILDDIR)/lexer_gen.o:
+	make lexer_gen.cpp -C $(SRCDIR)
+	$(CC) -c $(CFLAGS) $(SRCDIR)/lexer_gen.cpp -o $@
+
+$(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
+	@mkdir -p '$(@D)'
 	$(CC) -c $(CFLAGS) $< -o $@
 
+$(TARGET): $(OBJS)
+	$(CC) -c $(CFLAGS) $(TARGET).cpp -o $(BUILDDIR)/$(TARGET).o
+	$(CC) $(LFLAGS) $^ $(BUILDDIR)/$(TARGET).o -o $@.js
+
 clean:
-	rm -f *.o *.wasm $(TARGET).js
+	make clean -C $(SRCDIR)
+	rm -rf *.o *.wasm $(TARGET).js $(BUILDDIR)
