@@ -13,7 +13,7 @@ FileOut::~FileOut()
    m_out.close();
 }
 
-void FileOut::print(const char *format, ...) const
+void FileOut::print(const char *format, ...)
 {
    char buffer[1024];
    va_list args;
@@ -23,7 +23,7 @@ void FileOut::print(const char *format, ...) const
    m_out << buffer;
 }
 
-void MemOut::print(const char *format, ...) const
+void MemOut::print(const char *format, ...)
 {
    char buffer[1024];
    va_list args;
