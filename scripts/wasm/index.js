@@ -1,16 +1,54 @@
+const defaultCode =
+`# Execution begins at address 0
+.pos 0
+irmovq stack, %rsp   # Set up stack pointer
+call main            # Execute main program
+halt                 # Terminate program
+
+# Array of 4 elements
+.align 8
+array:   .quad 0x000d000d000d
+.quad 0x00c000c000c0
+.quad 0x0b000b000b00
+.quad 0xa000a000a000
+
+main:   irmovq array,%rdi
+irmovq $4,%rsi
+call sum             # sum(array, 4)
+ret
+
+# long sum(long *start, long count)
+# start in %rdi, count in %rsi
+sum:   irmovq $8,%r8    # Constant 8
+irmovq $1,%r9        # Constant 1
+xorq %rax,%rax       # sum = 0
+andq %rsi,%rsi       # Set CC
+jmp     test         # Goto test
+loop:   mrmovq (%rdi),%r10   # Get *start
+addq %r10,%rax       # Add to sum
+addq %r8,%rdi        # start++
+subq %r9,%rsi        # count--.  Set CC
+test:   jne    loop          # Stop when 0
+ret                  # Return
+
+# Stack starts here and grows to lower addresses
+.pos 0x200
+stack:
+`
+
 const vWasm = {
    data() {
       return {
-         input: '',
+         input: defaultCode,
          output: ''
       }
    },
    methods: {
-      toUppercase() {
-         this.output = UTF8ToString(Module._ToUppercase(allocateUTF8OnStack(this.input)))
+      convert() {
+         this.output = UTF8ToString(Module._Assemble(allocateUTF8OnStack(this.input)))
       },
-      clear() {
-         this.input = ''
+      reset() {
+         this.input = defaultCode
          this.output = ''
       }
    },
@@ -21,20 +59,20 @@ const vWasm = {
                <el-input
                   v-model="input"
                   type="textarea"
-                  placeholder="Please input"
-                  :rows="10"
+                  placeholder="Please input assembly code"
+                  rows="10"
                />
             </el-form-item>
             <el-form-item id="form-button">
-               <el-button type="primary" plain @click="toUppercase">Submit</el-button>
-               <el-button type="warning" plain @click="clear">Clear</el-button>
+               <el-button type="primary" plain @click="convert">Submit</el-button>
+               <el-button type="warning" plain @click="reset">Reset</el-button>
             </el-form-item>
          </el-form>
 
          <el-divider>Result</el-divider>
 
          <div class="result">
-            <p> {{output}} </p>
+            <pre>{{output}}</pre>
          </div>
       </div>
    `
