@@ -6,7 +6,7 @@ LEX=flex
 LEX_GEN=lexer_gen.cpp
 TARGET=yas
 
-SRCS := isa.cpp lexer.cpp main.cpp output.cpp
+SRCS := isa.cpp lexer.cpp main.cpp output.cpp input.cpp
 OBJS := $(LEX_GEN:.cpp=.o) $(SRCS:.cpp=.o)
 
 all: clean $(TARGET)

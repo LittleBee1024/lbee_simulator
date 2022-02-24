@@ -1,4 +1,5 @@
 #include "lexer.h"
+#include "input.h"
 #include "output.h"
 
 #include <fstream>
@@ -60,15 +61,11 @@ static bool endsWith(const std::string &str, const std::string &suffix)
 
 int demo()
 {
-   std::string buf(s_code);
-   FILE *in = fmemopen(&buf[0], buf.size(), "r");
+   MemIn in(s_code);
    MemOut out;
 
    int ret = YasLexer(in, out).parse();
    (ret == ERROR) ? printf("Yas Lexer parse has error\n") : printf("Yas Lexer parse is done\n");
-
-   if (!in)
-      fclose(in);
 
    std::ofstream fileOut("demo.yo");
    fileOut << out.dump();
@@ -88,16 +85,13 @@ int main(int argc, char *argv[])
    std::string infname = argv[1];
    if (!endsWith(infname, ".ys"))
       usage(argv[0]);
-   FILE *in = fopen(infname.c_str(), "r");
+   FileIn in(infname.c_str());
 
    std::string outfname = infname.substr(0, infname.find_last_of('.')) + ".yo";
    FileOut out(outfname.c_str());
 
    int ret = YasLexer(in, out).parse();
    (ret == ERROR) ? printf("Yas Lexer parse has error\n") : printf("Yas Lexer parse is done\n");
-
-   if (!in)
-      fclose(in);
 
    return ret;
 }

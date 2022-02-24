@@ -27,12 +27,12 @@ namespace
 
 }
 
-YasLexer::YasLexer(FILE *in, OutputInterface &out) :
+YasLexer::YasLexer(InputInterface &in, OutputInterface &out) :
    m_pass(0),
    m_hitError(false),
    m_impl(out)
 {
-   setYasIn(in);
+   setYasIn(in.get());
 }
 
 int YasLexer::parse()

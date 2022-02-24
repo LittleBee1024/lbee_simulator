@@ -1,6 +1,7 @@
 #pragma once
 
 #include "isa.h"
+#include "input.h"
 #include "output.h"
 
 #include <deque>
@@ -81,7 +82,7 @@ private:
 class YasLexer
 {
 public:
-   YasLexer(FILE *in, OutputInterface &out);
+   YasLexer(InputInterface &in, OutputInterface &out);
    int parse();
 
 public:
