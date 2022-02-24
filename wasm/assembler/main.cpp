@@ -62,13 +62,17 @@ int demo()
 {
    std::string buf(s_code);
    FILE *in = fmemopen(&buf[0], buf.size(), "r");
-   FileOut out("demo.yo");
+   MemOut out;
 
    int ret = YasLexer(in, out).parse();
    (ret == ERROR) ? printf("Yas Lexer parse has error\n") : printf("Yas Lexer parse is done\n");
 
    if (!in)
       fclose(in);
+
+   std::ofstream fileOut("demo.yo");
+   fileOut << out.dump();
+   fileOut.close();
 
    return ret;
 }
