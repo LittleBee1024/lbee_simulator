@@ -21,7 +21,7 @@ set(TARGET web_api)
 add_executable(${TARGET} ${FLEX_OUT} ${SRC_CPP})
 
 # The option should not have any white space, use semicolon to split different options
-separate_arguments(COMPILE_OPTION UNIX_COMMAND "-Wall -I${CMAKE_CURRENT_SOURCE_DIR}/src")
+separate_arguments(COMPILE_OPTION UNIX_COMMAND "-Wall -Wno-misleading-indentation -I${CMAKE_CURRENT_SOURCE_DIR}/src")
 separate_arguments(LINK_OPTION UNIX_COMMAND "--no-entry -s 'EXPORTED_FUNCTIONS=['_malloc', '_free']'")
 
 set_target_properties(${TARGET} PROPERTIES
