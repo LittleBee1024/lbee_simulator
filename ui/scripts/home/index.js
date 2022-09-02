@@ -4,7 +4,8 @@ const vHome = {
          <h1 align="center">
             <img alt="LittleBee" src="images/logo.png" width="200">
          </h1>
-         <h2>Vue3 + Element Plus + Webassembly + CPP Project Template</h2>
+         <h1>Y86-64 Simulator</h1>
+         <p>Powered by Vue3 + Element Plus + Webassembly + CPP</p>
       </div>
    `
 }
