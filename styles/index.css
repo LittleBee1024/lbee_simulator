@@ -30,15 +30,8 @@ body {
    font-family: monospace;
 }
 
-.result {
-   margin-top: 2em;
-   padding-left: 1em;
-   padding-right: 1em;
-   background-color: lightgrey;
-   text-align: left;
-   overflow: auto;
-   width: auto;
-   height: 20em;
+#machine-code .el-textarea__inner {
+   background-color: rgb(239, 235, 235);
 }
 
 #form-button .el-form-item__content {
