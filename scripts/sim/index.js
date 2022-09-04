@@ -18,14 +18,8 @@ const vSim = {
    },
    template: `
       <div>
-         <el-row :gutter="20">
-            <el-col :span="10">
-               <vasmcode :bin-code="binCode" @assemble="setBinCode"/>
-            </el-col>
-            <el-col :span="14">
-               <vbincode :bin-code="binCode" />
-            </el-col>
-         </el-row>
+         <vasmcode :bin-code="binCode" @assemble="setBinCode"/>
+         <vbincode :bin-code="binCode" />
       </div>
    `
 }
