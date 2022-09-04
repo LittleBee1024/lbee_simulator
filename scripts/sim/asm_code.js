@@ -63,7 +63,7 @@ const vAsmCode = {
                rows="19"
             />
          </el-form-item>
-         <el-form-item id="form-button">
+         <el-form-item id="assemble-button">
             <el-button type="primary" @click="convert">Assemble</el-button>
             <el-button type="warning" @click="reset">Reset</el-button>
          </el-form-item>
