@@ -1,7 +1,7 @@
 import vAsmCode from './asm_code.js'
 import vBinCode from './bin_code.js'
 
-const vWasm = {
+const vSim = {
    data() {
       return {
          binCode: ''
@@ -30,4 +30,4 @@ const vWasm = {
    `
 }
 
-export default vWasm;
+export default vSim;
