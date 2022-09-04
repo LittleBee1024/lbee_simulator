@@ -1,5 +1,5 @@
 import vHome from './home/index.js'
-import vWasm from './wasm/index.js'
+import vSim from './sim/index.js'
 
 const vAside = {
    props: ['routes'],
@@ -18,7 +18,7 @@ const vMain = {
       return {
          pages: {
             'Home': Vue.shallowRef(vHome),
-            'Wasm': Vue.shallowRef(vWasm)
+            'Simulator': Vue.shallowRef(vSim)
          },
          NotFoundPage: { template: '<p>Page not found</p>' }
       }
@@ -38,7 +38,7 @@ const vMain = {
 const vRoot = {
    data() {
       return {
-         routes: ["Home", "Wasm"],
+         routes: ["Home", "Simulator"],
          currentRoute: "Home"
       }
    },
