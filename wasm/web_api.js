@@ -1285,6 +1285,10 @@ var ASM_CONSTS = {
       HEAP8.set(array, buffer);
     }
 
+  function ___assert_fail(condition, filename, line, func) {
+      abort('Assertion failed: ' + UTF8ToString(condition) + ', at: ' + [filename ? UTF8ToString(filename) : 'unknown filename', line, func ? UTF8ToString(func) : 'unknown function']);
+    }
+
   function ___cxa_allocate_exception(size) {
       // Thrown object is prepended by exception metadata block
       return _malloc(size + 24) + 24;
@@ -4842,6 +4846,7 @@ function checkIncomingModuleAPI() {
   ignoredModuleProp('fetchSettings');
 }
 var asmLibraryArg = {
+  "__assert_fail": ___assert_fail,
   "__cxa_allocate_exception": ___cxa_allocate_exception,
   "__cxa_throw": ___cxa_throw,
   "abort": _abort,
@@ -4862,6 +4867,9 @@ var asm = createWasm();
 var ___wasm_call_ctors = Module["___wasm_call_ctors"] = createExportWrapper("__wasm_call_ctors");
 
 /** @type {function(...*):?} */
+var _Assemble = Module["_Assemble"] = createExportWrapper("Assemble");
+
+/** @type {function(...*):?} */
 var _malloc = Module["_malloc"] = createExportWrapper("malloc");
 
 /** @type {function(...*):?} */
@@ -4869,9 +4877,6 @@ var ___errno_location = Module["___errno_location"] = createExportWrapper("__err
 
 /** @type {function(...*):?} */
 var _free = Module["_free"] = createExportWrapper("free");
-
-/** @type {function(...*):?} */
-var _Assemble = Module["_Assemble"] = createExportWrapper("Assemble");
 
 /** @type {function(...*):?} */
 var _fflush = Module["_fflush"] = createExportWrapper("fflush");

@@ -15,12 +15,9 @@
 #   endif
 #endif
 
-#include "src/api.h"
+#include "./c_api.h"
 
 EM_PORT_API(const char*) Assemble(const char* in) {
-   static std::string buf;
-   buf.clear();
-   buf = LBEE_SIMULATOR::assemble(in);
-   return buf.c_str();
+   return assemble(in);
 }
 
