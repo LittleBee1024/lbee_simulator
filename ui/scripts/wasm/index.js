@@ -39,41 +39,55 @@ stack:
 const vWasm = {
    data() {
       return {
-         input: defaultCode,
-         output: ''
+         asmCode: defaultCode,
+         machineCode: ''
       }
    },
    methods: {
       convert() {
-         this.output = UTF8ToString(Module._Assemble(allocateUTF8OnStack(this.input)))
+         this.machineCode = UTF8ToString(Module._Assemble(allocateUTF8OnStack(this.asmCode)))
       },
       reset() {
-         this.input = defaultCode
-         this.output = ''
+         this.asmCode = defaultCode
+         this.machineCode = ''
       }
    },
    template: `
       <div>
-         <el-form label-position="top">
-            <el-form-item label="Code">
-               <el-input
-                  v-model="input"
-                  type="textarea"
-                  placeholder="Please input assembly code"
-                  rows="10"
-               />
-            </el-form-item>
-            <el-form-item id="form-button">
-               <el-button type="primary" plain @click="convert">Submit</el-button>
-               <el-button type="warning" plain @click="reset">Reset</el-button>
-            </el-form-item>
-         </el-form>
-
-         <el-divider>Result</el-divider>
-
-         <div class="result">
-            <pre>{{output}}</pre>
-         </div>
+         <el-row :gutter="20">
+            <el-col :span="10">
+               <el-form label-position="top">
+                  <el-form-item label="Y86-64 ASM Code">
+                     <el-input
+                        v-model="asmCode"
+                        type="textarea"
+                        placeholder="Please input assembly code"
+                        rows="19"
+                     />
+                  </el-form-item>
+                  <el-form-item id="form-button">
+                     <el-button type="primary" plain @click="convert">Submit</el-button>
+                     <el-button type="warning" plain @click="reset">Reset</el-button>
+                  </el-form-item>
+               </el-form>
+            </el-col>
+            <el-col :span="14">
+               <el-form label-position="top">
+                  <el-form-item id="machine-code" label="Y86-64 Machine Code">
+                     <el-input
+                        v-model="machineCode"
+                        type="textarea"
+                        placeholder=""
+                        rows="19"
+                        :readonly="true"
+                     />
+                  </el-form-item>
+                  <el-form-item id="form-button">
+                     <el-button type="primary" plain @click="convert">Run</el-button>
+                  </el-form-item>
+               </el-form>
+            </el-col>
+         </el-row>
       </div>
    `
 }
