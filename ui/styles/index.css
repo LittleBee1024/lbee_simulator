@@ -34,7 +34,7 @@ body {
    background-color: rgb(239, 235, 235);
 }
 
-#form-button .el-form-item__content {
+#assemble-button .el-form-item__content {
    display: flex;
-   justify-content: flex-end;
+   justify-content: flex-start;
 }
