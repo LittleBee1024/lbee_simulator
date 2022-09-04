@@ -14,6 +14,11 @@ serve:
 dump:
 	wasm2wat ./build/html/wasm/web_api.wasm -o web_api.wat
 
+# Watch file changes using web-dev-server tool: https://modern-web.dev/docs/dev-server/overview/
+# Install: npm install -g @web/dev-server
+watch:
+	cd ./build/html && web-dev-server --node-resolve --watch --open
+
 clean:
 	@rm -rf build
 
