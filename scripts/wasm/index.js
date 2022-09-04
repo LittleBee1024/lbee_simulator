@@ -36,56 +36,89 @@ ret                  # Return
 stack:
 `
 
+const vAsmCode = {
+   data() {
+      return {
+         asmCode: defaultCode
+      }
+   },
+   emits: ['assemble'],
+   methods: {
+      convert() {
+         let code = UTF8ToString(Module._Assemble(allocateUTF8OnStack(this.asmCode)))
+         this.$emit("assemble", code)
+      },
+      reset() {
+         this.asmCode = defaultCode
+         this.$emit("assemble", "")
+      }
+   },
+   template: `
+      <el-form label-position="top">
+         <el-form-item label="Y86-64 ASM Code">
+            <el-input
+               v-model="asmCode"
+               type="textarea"
+               placeholder="Please input assembly code"
+               rows="19"
+            />
+         </el-form-item>
+         <el-form-item id="form-button">
+            <el-button type="primary" @click="convert">Assemble</el-button>
+            <el-button type="warning" @click="reset">Reset</el-button>
+         </el-form-item>
+      </el-form>
+   `
+}
+
+const vMachineCode = {
+   props: ['machineCode'],
+   methods: {
+      run() {
+         console.log("Run")
+      },
+   },
+   template: `
+      <el-form label-position="top">
+         <el-form-item id="machine-code" label="Y86-64 Machine Code">
+            <el-input
+               v-model="machineCode"
+               type="textarea"
+               placeholder=""
+               rows="19"
+               :readonly="true"
+            />
+         </el-form-item>
+         <el-form-item id="form-button">
+            <el-button type="primary" @click="run">Run</el-button>
+         </el-form-item>
+      </el-form>
+   `
+}
+
 const vWasm = {
    data() {
       return {
-         asmCode: defaultCode,
          machineCode: ''
       }
    },
    methods: {
-      convert() {
-         this.machineCode = UTF8ToString(Module._Assemble(allocateUTF8OnStack(this.asmCode)))
-      },
-      reset() {
-         this.asmCode = defaultCode
-         this.machineCode = ''
+      setMachineCode(code) {
+         this.machineCode = code
       }
+   },
+   components: {
+      'vasmcode': vAsmCode,
+      'vmachinecode': vMachineCode,
    },
    template: `
       <div>
          <el-row :gutter="20">
             <el-col :span="10">
-               <el-form label-position="top">
-                  <el-form-item label="Y86-64 ASM Code">
-                     <el-input
-                        v-model="asmCode"
-                        type="textarea"
-                        placeholder="Please input assembly code"
-                        rows="19"
-                     />
-                  </el-form-item>
-                  <el-form-item id="form-button">
-                     <el-button type="primary" plain @click="convert">Submit</el-button>
-                     <el-button type="warning" plain @click="reset">Reset</el-button>
-                  </el-form-item>
-               </el-form>
+               <vasmcode :machine-code="machineCode" @assemble="setMachineCode"/>
             </el-col>
             <el-col :span="14">
-               <el-form label-position="top">
-                  <el-form-item id="machine-code" label="Y86-64 Machine Code">
-                     <el-input
-                        v-model="machineCode"
-                        type="textarea"
-                        placeholder=""
-                        rows="19"
-                        :readonly="true"
-                     />
-                  </el-form-item>
-                  <el-form-item id="form-button">
-                     <el-button type="primary" plain @click="convert">Run</el-button>
-                  </el-form-item>
-               </el-form>
+               <vmachinecode :machine-code="machineCode" />
             </el-col>
          </el-row>
       </div>
