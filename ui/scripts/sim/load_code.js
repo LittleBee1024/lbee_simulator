@@ -1,8 +1,8 @@
 const vLoadCode = {
+   props: ['activeAddr'],
    data() {
       return {
-         loadCodes: [{ addr: 0x000, instr: '', comment: ''}],
-         activeAddr: -1
+         loadCodes: [{ addr: 0x000, instr: '', comment: ''}]
       }
    },
    methods: {
@@ -37,7 +37,6 @@ const vLoadCode = {
          }
       }
    },
-   props: ['binCode'],
    template: `
       <el-button type="primary" icon="Upload" @click="load">Load</el-button>
       <br />

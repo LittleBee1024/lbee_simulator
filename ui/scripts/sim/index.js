@@ -5,7 +5,8 @@ import vLoadCode from './load_code.js'
 const vSim = {
    data() {
       return {
-         binCode: ''
+         binCode: '',
+         activeAddr: 0
       }
    },
    methods: {
@@ -20,9 +21,9 @@ const vSim = {
    },
    template: `
       <div>
-         <vasmcode :bin-code="binCode" @assemble="setBinCode"/>
+         <vasmcode @assemble="setBinCode"/>
          <vbincode :bin-code="binCode" />
-         <vloadcode />
+         <vloadcode :active-addr="activeAddr" />
       </div>
    `
 }
