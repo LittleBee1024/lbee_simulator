@@ -4867,7 +4867,22 @@ var asm = createWasm();
 var ___wasm_call_ctors = Module["___wasm_call_ctors"] = createExportWrapper("__wasm_call_ctors");
 
 /** @type {function(...*):?} */
-var _Assemble = Module["_Assemble"] = createExportWrapper("Assemble");
+var _Sim_Assemble = Module["_Sim_Assemble"] = createExportWrapper("Sim_Assemble");
+
+/** @type {function(...*):?} */
+var _Sim_Load_Code_Save = Module["_Sim_Load_Code_Save"] = createExportWrapper("Sim_Load_Code_Save");
+
+/** @type {function(...*):?} */
+var _Sim_Reset_Recover = Module["_Sim_Reset_Recover"] = createExportWrapper("Sim_Reset_Recover");
+
+/** @type {function(...*):?} */
+var _Sim_Get_Code_Len = Module["_Sim_Get_Code_Len"] = createExportWrapper("Sim_Get_Code_Len");
+
+/** @type {function(...*):?} */
+var _Sim_Get_Code_Instr = Module["_Sim_Get_Code_Instr"] = createExportWrapper("Sim_Get_Code_Instr");
+
+/** @type {function(...*):?} */
+var _Sim_Get_Code_Comment = Module["_Sim_Get_Code_Comment"] = createExportWrapper("Sim_Get_Code_Comment");
 
 /** @type {function(...*):?} */
 var _malloc = Module["_malloc"] = createExportWrapper("malloc");

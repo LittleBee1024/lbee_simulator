@@ -1,5 +1,6 @@
 #include "./c_api.h"
 #include "./global.h"
+#include "./sim_viewer.h"
 #include "./_common/io_interface.h"
 #include "./_common/input.h"
 #include "./_common/output.h"
@@ -8,7 +9,7 @@
 #include <string>
 #include <memory>
 
-const char *assemble(const char *buf)
+const char *sim_assemble(const char *buf)
 {
    std::unique_ptr<IO::InputInterface> in = std::make_unique<IO::MemIn>(buf);
    std::shared_ptr<IO::OutputInterface> out = std::make_shared<IO::MemOut>();
@@ -43,4 +44,22 @@ void sim_reset_recover()
    auto yis = GLOBAL::SimSingleton::getInstance();
    yis->reset();
    yis->recover();
+}
+
+int sim_get_code_len()
+{
+   SIM::SimViewer v(GLOBAL::SimSingleton::getInstance());
+   return v.getCodeLen();
+}
+
+const char *sim_get_code_instr(int pos)
+{
+   SIM::SimViewer v(GLOBAL::SimSingleton::getInstance());
+   return v.getCodeInstr(pos);
+}
+
+const char *sim_get_code_comment(int pos)
+{
+   SIM::SimViewer v(GLOBAL::SimSingleton::getInstance());
+   return v.getCodeComment(pos);
 }

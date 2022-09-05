@@ -11,7 +11,15 @@ add_custom_command(
 )
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/_common COMMON_SRCS)
+# exclude main.cpp because wasm doesn't need it
+list(FILTER COMMON_SRCS EXCLUDE REGEX ".*main\\.cpp$")
+
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/assembler ASSEMBLER_SRCS)
+list(FILTER ASSEMBLER_SRCS EXCLUDE REGEX ".*main\\.cpp$")
+
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/simulator SIMULATOR_SRCS)
+list(FILTER SIMULATOR_SRCS EXCLUDE REGEX ".*main\\.cpp$")
+
 file(GLOB SRCS LIST_DIRECTORIES false ${CMAKE_CURRENT_LIST_DIR} "*.cpp")
 
 # message(STATUS "FLEX_OUT = ${FLEX_OUT}")
@@ -26,6 +34,7 @@ add_executable(${TARGET}
    ${FLEX_OUT}
    ${COMMON_SRCS}
    ${ASSEMBLER_SRCS}
+   ${SIMULATOR_SRCS}
 )
 
 # The option should not have any white space, use semicolon to split different options
