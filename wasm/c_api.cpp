@@ -10,13 +10,37 @@
 
 const char *assemble(const char *buf)
 {
-   static std::string yasOutBuf;
-
    std::unique_ptr<IO::InputInterface> in = std::make_unique<IO::MemIn>(buf);
    std::shared_ptr<IO::OutputInterface> out = std::make_shared<IO::MemOut>();
    YAS::Lexer(std::move(in)).parse(out);
 
-   yasOutBuf.clear();
-   yasOutBuf = dynamic_cast<IO::MemOut *>(out.get())->dump();
-   return yasOutBuf.c_str();
+   GLOBAL::binCode.clear();
+   GLOBAL::binCode = dynamic_cast<IO::MemOut *>(out.get())->dump();
+   return GLOBAL::binCode.c_str();
+}
+
+void sim_load_code_save()
+{
+   if (GLOBAL::binCode.empty())
+   {
+      GLOBAL::simOut->out("[ERROR] No binary code, please generate one from ASM code\n");
+      return;
+   }
+
+   std::shared_ptr<IO::InputInterface> in = std::make_shared<IO::MemIn>(GLOBAL::binCode.c_str());
+   auto yis = GLOBAL::SimSingleton::getInstance();
+   if (yis->loadCode(in) == 0)
+   {
+      GLOBAL::simOut->out("[ERROR] Failed to load code\n");
+      return;
+   }
+   yis->save();
+   return;
+}
+
+void sim_reset_recover()
+{
+   auto yis = GLOBAL::SimSingleton::getInstance();
+   yis->reset();
+   yis->recover();
 }
