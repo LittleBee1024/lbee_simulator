@@ -1,6 +1,6 @@
 import vAsmCode from './asm_code.js'
 import vBinCode from './bin_code.js'
-import vLoadCode from './load_code.js'
+import vLoad from './load.js'
 
 const vSim = {
    data() {
@@ -17,13 +17,13 @@ const vSim = {
    components: {
       'vasmcode': vAsmCode,
       'vbincode': vBinCode,
-      'vloadcode': vLoadCode,
+      'vload': vLoad,
    },
    template: `
       <div>
          <vasmcode @assemble="setBinCode"/>
          <vbincode :bin-code="binCode" />
-         <vloadcode :active-addr="activeAddr" />
+         <vload :active-addr="activeAddr" />
       </div>
    `
 }

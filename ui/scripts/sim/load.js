@@ -1,4 +1,4 @@
-const vLoadCode = {
+const vLoad = {
    props: ['activeAddr'],
    data() {
       return {
@@ -52,4 +52,4 @@ const vLoadCode = {
    `
 }
 
-export default vLoadCode;
+export default vLoad;
