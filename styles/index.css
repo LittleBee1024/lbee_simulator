@@ -39,6 +39,14 @@ body {
    --el-input-bg-color: rgb(239, 235, 235);
 }
 
+.el-table {
+   height: 40vh;
+}
+
+.el-table .el-table__cell {
+   padding: 0px;
+}
+
 .el-table .active{
    --el-table-tr-bg-color: #ffa724;
 }

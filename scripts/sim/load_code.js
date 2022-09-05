@@ -40,8 +40,10 @@ const vLoadCode = {
    props: ['binCode'],
    template: `
       <el-button type="primary" icon="Upload" @click="load">Load</el-button>
+      <br />
       <el-table
          :data="loadCodes"
+         border
          style="width: 100%"
          :row-class-name="tableRowClassName">
          <el-table-column prop="addr" label="Address" width="100" :formatter="formatAddr"/>
