@@ -1,27 +1,27 @@
 body {
-   margin : 0em;
+   margin: 0em;
    padding: 0em;
 }
 
 .el-header {
-   margin         : 0em;
-   padding        : 0em;
-   display        : flex;
-   align-items    : center;
+   margin: 0em;
+   padding: 0em;
+   display: flex;
+   align-items: center;
    justify-content: flex-start;
-   flex-wrap      : wrap;
+   flex-wrap: wrap;
 }
 
 .el-footer {
    background-color: #ffa724;
-   display        : flex;
-   align-items    : center;
+   display: flex;
+   align-items: center;
    justify-content: flex-end;
 }
 
 .el-menu {
    background-color: #ffa724;
-   flex            : 1;
+   flex: 1;
 }
 
 .el-main {
@@ -35,6 +35,15 @@ body {
    justify-content: flex-start;
 }
 
-#bin-code .el-textarea__inner {
-   background-color: rgb(239, 235, 235);
+#bin-code .el-textarea {
+   --el-input-bg-color: rgb(239, 235, 235);
 }
+
+.el-table .active{
+   --el-table-tr-bg-color: #ffa724;
+}
+
+.el-table .inactive{
+   --el-table-tr-bg-color: rgb(239, 235, 235);
+}
+
