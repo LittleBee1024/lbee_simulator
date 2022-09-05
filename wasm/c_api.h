@@ -22,4 +22,12 @@ extern "C"
     *
     */
    void sim_reset_recover();
+
+   /**
+    * @brief APIs to export simulator information
+    *
+    */
+   int sim_get_code_len();
+   const char *sim_get_code_instr(int pos);
+   const char *sim_get_code_comment(int pos);
 }

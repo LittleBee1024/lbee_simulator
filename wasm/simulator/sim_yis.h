@@ -15,8 +15,8 @@ namespace SIM
       State runOneCycle() override;
 
    private:
-      // A TCL/TK class for GUI
-      friend class SimRender;
+      // A class for GUI
+      friend class SimViewer;
       // Cache data for GUI
       struct StageData
       {

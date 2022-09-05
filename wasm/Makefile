@@ -14,7 +14,7 @@ clean:
 	rm -rf *.o *.wasm $(TARGET).js $(BUILD_DIR)
 
 # Source code in current folder
-SRCS=web_api.cpp c_api.cpp global.cpp
+SRCS=web_api.cpp c_api.cpp global.cpp sim_viewer.cpp
 OBJS=$(SRCS:%.cpp=$(BUILD_DIR)/%.o)
 
 $(BUILD_DIR)/%.o: %.cpp
