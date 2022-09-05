@@ -7,6 +7,4 @@
 namespace GLOBAL
 {
 
-   extern std::string yasOutBuf;
-
 }

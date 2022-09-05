@@ -10,11 +10,13 @@
 
 const char *assemble(const char *buf)
 {
+   static std::string yasOutBuf;
+
    std::unique_ptr<IO::InputInterface> in = std::make_unique<IO::MemIn>(buf);
    std::shared_ptr<IO::OutputInterface> out = std::make_shared<IO::MemOut>();
    YAS::Lexer(std::move(in)).parse(out);
 
-   GLOBAL::yasOutBuf.clear();
-   GLOBAL::yasOutBuf = dynamic_cast<IO::MemOut *>(out.get())->dump();
-   return GLOBAL::yasOutBuf.c_str();
+   yasOutBuf.clear();
+   yasOutBuf = dynamic_cast<IO::MemOut *>(out.get())->dump();
+   return yasOutBuf.c_str();
 }
