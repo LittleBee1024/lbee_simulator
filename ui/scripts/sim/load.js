@@ -41,13 +41,12 @@ const vLoad = {
       <el-button type="primary" icon="Upload" @click="load">Load</el-button>
       <br />
       <el-table
-         :data="loadCodes"
          border
-         style="width: 100%"
+         :data="loadCodes"
          :row-class-name="tableRowClassName">
-         <el-table-column prop="addr" label="Address" width="100" :formatter="formatAddr"/>
+         <el-table-column fixed prop="addr" label="Address" width="100" :formatter="formatAddr"/>
          <el-table-column prop="instr" label="Instruction" width="200" />
-         <el-table-column prop="comment" label="Comment" />
+         <el-table-column prop="comment" label="Comment" min-width="400"/>
       </el-table>
    `
 }
