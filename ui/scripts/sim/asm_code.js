@@ -50,6 +50,8 @@ const vAsmCode = {
       },
       reset() {
          this.asmCode = defaultCode
+         // clean the cache binary code in wasm
+         Module._Sim_Assemble(allocateUTF8OnStack(""))
          this.$emit("assemble", "")
       }
    },

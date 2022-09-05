@@ -33,6 +33,10 @@ EM_PORT_API(int) Sim_Get_Code_Len() {
    return sim_get_code_len();
 }
 
+EM_PORT_API(int) Sim_Get_Code_Addr(int pos) {
+   return sim_get_code_addr(pos);
+}
+
 EM_PORT_API(const char*) Sim_Get_Code_Instr(int pos) {
    return sim_get_code_instr(pos);
 }

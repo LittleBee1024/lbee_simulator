@@ -22,7 +22,7 @@ const vSim = {
       <div>
          <vasmcode :bin-code="binCode" @assemble="setBinCode"/>
          <vbincode :bin-code="binCode" />
-         <vloadcode :bin-code="binCode" />
+         <vloadcode />
       </div>
    `
 }

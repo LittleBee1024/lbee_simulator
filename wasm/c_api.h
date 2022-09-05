@@ -28,6 +28,7 @@ extern "C"
     *
     */
    int sim_get_code_len();
+   int sim_get_code_addr(int pos);
    const char *sim_get_code_instr(int pos);
    const char *sim_get_code_comment(int pos);
 }
