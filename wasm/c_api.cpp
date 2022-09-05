@@ -9,7 +9,7 @@
 #include <string>
 #include <memory>
 
-const char *assemble(const char *buf)
+const char *sim_assemble(const char *buf)
 {
    std::unique_ptr<IO::InputInterface> in = std::make_unique<IO::MemIn>(buf);
    std::shared_ptr<IO::OutputInterface> out = std::make_shared<IO::MemOut>();

@@ -45,7 +45,7 @@ const vAsmCode = {
    emits: ['assemble'],
    methods: {
       convert() {
-         let code = UTF8ToString(Module._Assemble(allocateUTF8OnStack(this.asmCode)))
+         let code = UTF8ToString(Module._Sim_Assemble(allocateUTF8OnStack(this.asmCode)))
          this.$emit("assemble", code)
       },
       reset() {

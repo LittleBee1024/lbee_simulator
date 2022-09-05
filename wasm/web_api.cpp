@@ -17,8 +17,8 @@
 
 #include "./c_api.h"
 
-EM_PORT_API(const char*) Assemble(const char* in) {
-   return assemble(in);
+EM_PORT_API(const char*) Sim_Assemble(const char* in) {
+   return sim_assemble(in);
 }
 
 EM_PORT_API(void) Sim_Load_Code_Save() {

@@ -9,7 +9,7 @@ extern "C"
     * @param asmCode is a pointer to assembly ASM code buffer
     * @return a pointer to bin code buffer
     */
-   const char *assemble(const char *asmCode);
+   const char *sim_assemble(const char *asmCode);
 
    /**
     * @brief Load binary code from "assemble" function to the simulator and save the memory and registers
