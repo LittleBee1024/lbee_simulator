@@ -35,12 +35,17 @@ body {
    justify-content: flex-start;
 }
 
+.el-textarea {
+   min-width: auto;
+}
+
 #bin-code .el-textarea {
    --el-input-bg-color: rgb(239, 235, 235);
 }
 
 .el-table {
    height: 40vh;
+   min-width: auto;
 }
 
 .el-table .el-table__cell {
