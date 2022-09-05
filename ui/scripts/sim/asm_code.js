@@ -63,9 +63,9 @@ const vAsmCode = {
                rows="10"
             />
          </el-form-item>
-         <el-form-item id="assemble-button">
-            <el-button type="primary" @click="convert">Assemble</el-button>
-            <el-button type="warning" @click="reset">Reset</el-button>
+         <el-form-item>
+            <el-button type="primary" icon="Check" @click="convert">Compile</el-button>
+            <el-button type="warning" icon="Refresh" @click="reset">Reset</el-button>
          </el-form-item>
       </el-form>
    `
