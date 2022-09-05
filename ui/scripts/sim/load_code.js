@@ -1,15 +1,7 @@
-const emptyCode = [
-   {
-      addr: 0x000,
-      instr: '',
-      comment: '',
-   },
-]
-
 const vLoadCode = {
    data() {
       return {
-         loadCodes: emptyCode,
+         loadCodes: [{ addr: 0x000, instr: '', comment: ''}],
          activeAddr: -1
       }
    },
@@ -24,19 +16,25 @@ const vLoadCode = {
          return "inactive"
       },
       load() {
-         this.loadCodes = emptyCode
+         this.loadCodes.length = 0
 
          Module._Sim_Reset_Recover()
          Module._Sim_Load_Code_Save()
          let codeLen = Module._Sim_Get_Code_Len()
+         console.log(codeLen + " bytes code was loaded")
+         if (codeLen === 0)
+         {
+            this.loadCodes.push({ addr: 0x000, instr: '', comment: ''})
+            return
+         }
+
          for (let pos = 0; pos < codeLen; pos++) {
             this.loadCodes.splice(pos, 0, {
-               addr : Module._Sim_Get_Code_Addr(pos),
+               addr: Module._Sim_Get_Code_Addr(pos),
                instr: UTF8ToString(Module._Sim_Get_Code_Instr(pos)),
                comment: UTF8ToString(Module._Sim_Get_Code_Comment(pos)),
             })
          }
-         console.log(codeLen + " bytes code was loaded")
       }
    },
    props: ['binCode'],
