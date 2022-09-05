@@ -30,11 +30,11 @@ body {
    font-family: monospace;
 }
 
-#bin-code .el-textarea__inner {
-   background-color: rgb(239, 235, 235);
-}
-
-#assemble-button .el-form-item__content {
+.el-button {
    display: flex;
    justify-content: flex-start;
+}
+
+#bin-code .el-textarea__inner {
+   background-color: rgb(239, 235, 235);
 }
