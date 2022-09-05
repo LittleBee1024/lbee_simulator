@@ -60,7 +60,7 @@ const vAsmCode = {
                v-model="asmCode"
                type="textarea"
                placeholder="Please input assembly code"
-               rows="19"
+               rows="10"
             />
          </el-form-item>
          <el-form-item id="assemble-button">

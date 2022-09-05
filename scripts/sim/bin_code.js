@@ -7,7 +7,7 @@ const vBinCode = {
                v-model="binCode"
                type="textarea"
                placeholder=""
-               rows="19"
+               rows="10"
                :readonly="true"
             />
          </el-form-item>
