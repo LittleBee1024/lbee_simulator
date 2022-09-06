@@ -17,7 +17,7 @@ const vRun = {
          if (!this.isRunning)
          {
             this.isRunning = true
-            this.runIntervalID = setInterval(this.step, this.speed * 10);
+            this.runIntervalID = setInterval(this.step, 1000 - this.speed * 10);
          }
       },
       step() {
@@ -42,10 +42,10 @@ const vRun = {
    },
    template: `
       <el-row>
-         <el-button type="primary" icon="VideoPlay" @click="run">Run</el-button>
-         <el-button type="primary" icon="ArrowRight" @click="step">Step</el-button>
-         <el-button type="warning" icon="VideoPause" @click="stop">Stop</el-button>
-         <el-button type="warning" icon="RefreshLeft" @click="reset">Reset</el-button>
+         <el-button type="primary" :disabled="isRunning" icon="VideoPlay" @click="run">Run</el-button>
+         <el-button type="primary" :disabled="isRunning" icon="ArrowRight" @click="step">Step</el-button>
+         <el-button type="warning" :disabled="!isRunning" icon="VideoPause" @click="stop">Stop</el-button>
+         <el-button type="warning" :disabled="false" icon="RefreshLeft" @click="reset">Reset</el-button>
       </el-row>
       <div class="slider-speed">
          <span class="demonstration">Run Speed</span>
