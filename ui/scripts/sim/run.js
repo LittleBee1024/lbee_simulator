@@ -1,3 +1,5 @@
+import vStates from "./states.js"
+
 const vRun = {
    data() {
       return {
@@ -6,12 +8,14 @@ const vRun = {
          runIntervalID: 0,
          activeAddr: -1,
          state: "OK",
+         updateStates: 0,
       }
    },
    emits: ['updateActiveAddr'],
    methods: {
       update() {
          this.$emit("updateActiveAddr", this.activeAddr)
+         this.updateStates = !this.updateStates
       },
       run() {
          if (!this.isRunning)
@@ -40,6 +44,9 @@ const vRun = {
          this.update()
       }
    },
+   components: {
+      'vstates': vStates,
+   },
    template: `
       <el-row>
          <el-button type="primary" :disabled="isRunning" icon="VideoPlay" @click="run">Run</el-button>
@@ -51,8 +58,7 @@ const vRun = {
          <span class="demonstration">Run Speed</span>
          <el-slider v-model="speed" />
       </div>
-      <el-divider>Y86-64 Registers</el-divider>
-      <el-divider>Y86-64 Data Memory Diff</el-divider>
+      <vstates :update="updateStates"/>
    `
 }
 
