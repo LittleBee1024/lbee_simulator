@@ -4891,6 +4891,9 @@ var _Sim_Get_Code_Instr = Module["_Sim_Get_Code_Instr"] = createExportWrapper("S
 var _Sim_Get_Code_Comment = Module["_Sim_Get_Code_Comment"] = createExportWrapper("Sim_Get_Code_Comment");
 
 /** @type {function(...*):?} */
+var _Sim_Get_Cur_PC = Module["_Sim_Get_Cur_PC"] = createExportWrapper("Sim_Get_Cur_PC");
+
+/** @type {function(...*):?} */
 var _malloc = Module["_malloc"] = createExportWrapper("malloc");
 
 /** @type {function(...*):?} */
