@@ -30,4 +30,10 @@ namespace SIM
       assert(pos < m_sim->m_code.size());
       return (m_sim->m_code)[pos].comment.c_str();
    }
+
+   int SimViewer::getCurPC() const
+   {
+      return m_sim->m_pc;
+   }
+
 }

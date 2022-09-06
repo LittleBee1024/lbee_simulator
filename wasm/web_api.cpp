@@ -48,3 +48,8 @@ EM_PORT_API(const char*) Sim_Get_Code_Instr(int pos) {
 EM_PORT_API(const char*) Sim_Get_Code_Comment(int pos) {
    return sim_get_code_comment(pos);
 }
+
+EM_PORT_API(int) Sim_Get_Cur_PC() {
+   return sim_get_cur_pc();
+}
+

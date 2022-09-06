@@ -44,4 +44,5 @@ extern "C"
     * @brief APIs to export simulator registers and data memory
     * 
     */
+   int sim_get_cur_pc();
 }

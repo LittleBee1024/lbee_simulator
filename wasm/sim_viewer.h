@@ -17,6 +17,8 @@ namespace SIM
       const char *getCodeInstr(int pos) const;
       const char *getCodeComment(int pos) const;
 
+      int getCurPC() const;
+
    private:
       const Yis *m_sim;
    };

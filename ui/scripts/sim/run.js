@@ -2,7 +2,8 @@ const vRun = {
    data() {
       return {
          activeAddr: -1,
-         speed: 50
+         speed: 50,
+         state: "OK"
       }
    },
    emits: ['updateActiveAddr'],
@@ -11,8 +12,8 @@ const vRun = {
          console.log("run")
       },
       step() {
-         console.log("step")
-         this.activeAddr++
+         this.state = UTF8ToString(Module._Sim_Step_Run(1/*one step*/))
+         this.activeAddr = Module._Sim_Get_Cur_PC()
          this.$emit("updateActiveAddr", this.activeAddr)
       },
       stop() {

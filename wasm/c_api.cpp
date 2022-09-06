@@ -88,3 +88,9 @@ const char *sim_get_code_comment(int pos)
    SIM::SimViewer v(GLOBAL::SimSingleton::getInstance());
    return v.getCodeComment(pos);
 }
+
+int sim_get_cur_pc()
+{
+   SIM::SimViewer v(GLOBAL::SimSingleton::getInstance());
+   return v.getCurPC();
+}
