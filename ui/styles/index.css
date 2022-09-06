@@ -60,15 +60,18 @@ body {
    --el-table-tr-bg-color: rgb(239, 235, 235);
 }
 
-.slider-speed {
+#run .el-row {
    display: flex;
-   align-items: center;
    justify-content: flex-start;
 }
 
-/* flex: <flex-grow flex-shrink and flex-basis> */
+.demonstration {
+   color: var(--el-text-color-secondary);
+   padding: 8px;
+}
+
 .el-slider {
    margin-top: 0;
    margin-left: 12px;
-   flex: 0 0 25%;
+   flex: 0 0 50%;
 }
