@@ -36,4 +36,10 @@ namespace SIM
       return m_sim->m_pc;
    }
 
+   int64_t SimViewer::getRegister(REG_ID id)
+   {
+      assert(id >= REG_RAX && id < REG_NONE);
+      return m_sim->m_reg.getRegVal(id);
+   }
+
 }

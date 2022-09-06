@@ -6,11 +6,14 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace GLOBAL
 {
    // global var to store binary code after assembly
    extern std::string binCode;
+   // global array to store all latest register values
+   extern std::vector<int64_t> registers;
    // global simulator output
    extern std::shared_ptr<IO::OutputInterface> simOut;
 
