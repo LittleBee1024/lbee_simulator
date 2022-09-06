@@ -6,6 +6,7 @@
 namespace GLOBAL
 {
    std::string binCode;
+   std::vector<int64_t> registers;
    std::shared_ptr<IO::OutputInterface> simOut = std::make_shared<IO::StdOut>();
 
    SIM::Yis *SimSingleton::getInstance()

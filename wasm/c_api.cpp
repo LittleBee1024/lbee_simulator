@@ -9,6 +9,7 @@
 
 #include <string>
 #include <memory>
+#include <assert.h>
 
 const char *sim_assemble(const char *buf)
 {
@@ -82,4 +83,14 @@ int sim_get_cur_pc()
 {
    SIM::SimViewer v(GLOBAL::SimSingleton::getInstance());
    return v.getCurPC();
+}
+
+int64_t *sim_get_registers()
+{
+   SIM::SimViewer v(GLOBAL::SimSingleton::getInstance());
+   for (int id = REG_RAX; id < REG_NONE; id++)
+   {
+      GLOBAL::registers[id] = v.getRegister((REG_ID)id);
+   }
+   return GLOBAL::registers.data();
 }

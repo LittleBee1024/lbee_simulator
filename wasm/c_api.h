@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 extern "C"
 {
 
@@ -44,4 +46,5 @@ extern "C"
     * 
     */
    int sim_get_cur_pc();
+   int64_t *sim_get_registers();
 }

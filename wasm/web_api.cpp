@@ -53,3 +53,7 @@ EM_PORT_API(int) Sim_Get_Cur_PC() {
    return sim_get_cur_pc();
 }
 
+EM_PORT_API(int64_t*) Sim_Get_Registers() {
+   return sim_get_registers();
+}
+

@@ -18,6 +18,7 @@ namespace SIM
       const char *getCodeComment(int pos) const;
 
       int getCurPC() const;
+      int64_t getRegister(REG_ID id);
 
    private:
       const Yis *m_sim;
