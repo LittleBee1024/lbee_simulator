@@ -68,7 +68,7 @@ const vAsmCode = {
          </el-form-item>
          <el-form-item>
             <el-button type="primary" icon="Check" @click="convert">Compile</el-button>
-            <el-button type="warning" icon="Refresh" @click="reset">Reset</el-button>
+            <el-button type="warning" icon="RefreshLeft" @click="reset">Reset</el-button>
          </el-form-item>
       </el-form>
    `
