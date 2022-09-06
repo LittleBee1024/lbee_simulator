@@ -42,17 +42,17 @@ const vAsmCode = {
          asmCode: defaultCode
       }
    },
-   emits: ['assemble'],
+   emits: ['updateBinCode'],
    methods: {
       convert() {
          let code = UTF8ToString(Module._Sim_Assemble(allocateUTF8OnStack(this.asmCode)))
-         this.$emit("assemble", code)
+         this.$emit("updateBinCode", code)
       },
       reset() {
          this.asmCode = defaultCode
          // clean the cache binary code in wasm
          Module._Sim_Assemble(allocateUTF8OnStack(""))
-         this.$emit("assemble", "")
+         this.$emit("updateBinCode", "")
       }
    },
    template: `

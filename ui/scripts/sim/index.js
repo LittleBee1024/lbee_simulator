@@ -11,7 +11,7 @@ const vSim = {
       }
    },
    methods: {
-      setBinCode(code) {
+      updateBinCode(code) {
          this.binCode = code
       },
       updateActiveAddr(addr) {
@@ -26,7 +26,7 @@ const vSim = {
    },
    template: `
       <div>
-         <vasmcode @assemble="setBinCode"/>
+         <vasmcode @update-bin-code="updateBinCode"/>
          <vbincode :bin-code="binCode" />
          <vload :active-addr="activeAddr" />
          <vrun @update-active-addr="updateActiveAddr" />
