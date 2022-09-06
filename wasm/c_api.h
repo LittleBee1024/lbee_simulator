@@ -24,11 +24,24 @@ extern "C"
    void sim_reset_recover();
 
    /**
-    * @brief APIs to export simulator information
+    * @brief Run simulator in serveral steps after loading code
+    * 
+    * @param step_num The number of running steps
+    * @return Current state name
+    */
+   const char *sim_step_run(int step_num);
+
+   /**
+    * @brief APIs to export simulator code memroy
     *
     */
    int sim_get_code_len();
    int sim_get_code_addr(int pos);
    const char *sim_get_code_instr(int pos);
    const char *sim_get_code_comment(int pos);
+
+   /**
+    * @brief APIs to export simulator registers and data memory
+    * 
+    */
 }

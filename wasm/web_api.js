@@ -4876,6 +4876,9 @@ var _Sim_Load_Code_Save = Module["_Sim_Load_Code_Save"] = createExportWrapper("S
 var _Sim_Reset_Recover = Module["_Sim_Reset_Recover"] = createExportWrapper("Sim_Reset_Recover");
 
 /** @type {function(...*):?} */
+var _Sim_Step_Run = Module["_Sim_Step_Run"] = createExportWrapper("Sim_Step_Run");
+
+/** @type {function(...*):?} */
 var _Sim_Get_Code_Len = Module["_Sim_Get_Code_Len"] = createExportWrapper("Sim_Get_Code_Len");
 
 /** @type {function(...*):?} */
