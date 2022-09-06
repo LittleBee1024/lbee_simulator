@@ -48,16 +48,17 @@ const vRun = {
       'vstates': vStates,
    },
    template: `
-      <el-row>
+      <el-row id="run">
          <el-button type="primary" :disabled="isRunning" icon="VideoPlay" @click="run">Run</el-button>
+         <el-slider v-model="speed" />
+         <span class="demonstration">Speed</span>
+      </el-row>
+      <br />
+      <el-row>
          <el-button type="primary" :disabled="isRunning" icon="ArrowRight" @click="step">Step</el-button>
          <el-button type="warning" :disabled="!isRunning" icon="VideoPause" @click="stop">Stop</el-button>
          <el-button type="warning" :disabled="false" icon="RefreshLeft" @click="reset">Reset</el-button>
       </el-row>
-      <div class="slider-speed">
-         <span class="demonstration">Run Speed</span>
-         <el-slider v-model="speed" />
-      </div>
       <vstates :update="updateStates"/>
    `
 }
