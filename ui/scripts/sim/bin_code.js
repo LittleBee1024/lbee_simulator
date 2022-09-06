@@ -2,7 +2,8 @@ const vBinCode = {
    props: ['binCode'],
    template: `
       <el-form label-position="top">
-         <el-form-item id="bin-code" label="Y86-64 Bin Code">
+         <el-divider>Y86-64 ASM Code</el-divider>
+         <el-form-item id="bin-code">
             <el-input
                v-model="binCode"
                type="textarea"
