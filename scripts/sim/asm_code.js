@@ -57,7 +57,8 @@ const vAsmCode = {
    },
    template: `
       <el-form label-position="top">
-         <el-form-item label="Y86-64 ASM Code">
+         <el-divider>Y86-64 ASM Code</el-divider>
+         <el-form-item>
             <el-input
                v-model="asmCode"
                type="textarea"
