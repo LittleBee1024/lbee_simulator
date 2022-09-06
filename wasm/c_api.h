@@ -26,10 +26,9 @@ extern "C"
    /**
     * @brief Run simulator in serveral steps after loading code
     * 
-    * @param step_num The number of running steps
     * @return Current state name
     */
-   const char *sim_step_run(int step_num);
+   const char *sim_step_run();
 
    /**
     * @brief APIs to export simulator code memroy

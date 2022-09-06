@@ -1,26 +1,43 @@
 const vRun = {
    data() {
       return {
-         activeAddr: -1,
          speed: 50,
-         state: "OK"
+         isRunning: false,
+         runIntervalID: 0,
+         activeAddr: -1,
+         state: "OK",
       }
    },
    emits: ['updateActiveAddr'],
    methods: {
-      run() {
-         console.log("run")
-      },
-      step() {
-         this.state = UTF8ToString(Module._Sim_Step_Run(1/*one step*/))
-         this.activeAddr = Module._Sim_Get_Cur_PC()
+      update() {
          this.$emit("updateActiveAddr", this.activeAddr)
       },
+      run() {
+         if (!this.isRunning)
+         {
+            this.isRunning = true
+            this.runIntervalID = setInterval(this.step, this.speed * 10);
+         }
+      },
+      step() {
+         this.activeAddr = Module._Sim_Get_Cur_PC()
+         this.state = UTF8ToString(Module._Sim_Step_Run())
+         this.update()
+      },
       stop() {
-         console.log("stop")
+         if (this.isRunning)
+         {
+            this.isRunning = false
+            clearInterval(this.runIntervalID);
+         }
       },
       reset() {
-         console.log("reset")
+         this.stop()
+         Module._Sim_Reset_Recover()
+         this.activeAddr = -1
+         this.state = "OK"
+         this.update()
       }
    },
    template: `

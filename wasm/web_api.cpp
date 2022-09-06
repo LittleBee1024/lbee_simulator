@@ -29,8 +29,8 @@ EM_PORT_API(void) Sim_Reset_Recover() {
    return sim_reset_recover();
 }
 
-EM_PORT_API(const char*) Sim_Step_Run(int step_num) {
-   return sim_step_run(step_num);
+EM_PORT_API(const char*) Sim_Step_Run() {
+   return sim_step_run();
 }
 
 EM_PORT_API(int) Sim_Get_Code_Len() {
