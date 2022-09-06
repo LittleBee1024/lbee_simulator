@@ -5,6 +5,7 @@
 #include "./_common/input.h"
 #include "./_common/output.h"
 #include "./assembler/yas.h"
+#include "./simulator/state.h"
 
 #include <string>
 #include <memory>
@@ -41,6 +42,27 @@ void sim_reset_recover()
    auto yis = GLOBAL::SimSingleton::getInstance();
    yis->reset();
    yis->recover();
+}
+
+const char *sim_step_run(int step_num)
+{
+   auto yis = GLOBAL::SimSingleton::getInstance();
+
+   SIM::State state = SIM::STAT_OK;
+   int i = 0;
+   for (i = 0; i < step_num && state == SIM::STAT_OK; i++)
+   {
+      state = yis->runOneCycle();
+      GLOBAL::simOut->out("[INFO] The cycle is done with State=%s\n", SIM::getStateName(state));
+   }
+
+   if (i != step_num && state != SIM::STAT_HLT)
+   {
+      GLOBAL::simOut->out("[ERROR] Step %d fails\n", i);
+      return SIM::getStateName(state);
+   }
+
+   return SIM::getStateName(state);
 }
 
 int sim_get_code_len()
