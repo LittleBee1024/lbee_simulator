@@ -1,7 +1,8 @@
 const vRun = {
    data() {
       return {
-         activeAddr: -1
+         activeAddr: -1,
+         speed: 50
       }
    },
    emits: ['updateActiveAddr'],
@@ -28,6 +29,10 @@ const vRun = {
          <el-button type="warning" icon="VideoPause" @click="stop">Stop</el-button>
          <el-button type="warning" icon="RefreshLeft" @click="reset">Reset</el-button>
       </el-row>
+      <div class="slider-speed">
+         <span class="demonstration">Run Speed</span>
+         <el-slider v-model="speed" />
+      </div>
       <el-divider>Y86-64 Registers</el-divider>
       <el-divider>Y86-64 Data Memory Diff</el-divider>
    `
