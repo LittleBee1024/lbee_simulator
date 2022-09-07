@@ -44,6 +44,15 @@ const vRun = {
          this.update()
       }
    },
+   computed: {
+      statusType: function() {
+         if (this.state == "OK")
+            return ''
+         if (this.state == "HALT")
+            return 'warning'
+         return 'danger'
+      }
+   },
    components: {
       'vstates': vStates,
    },
@@ -58,6 +67,10 @@ const vRun = {
          <el-button type="primary" :disabled="isRunning" icon="ArrowRight" @click="step">Step</el-button>
          <el-button type="warning" :disabled="!isRunning" icon="VideoPause" @click="stop">Stop</el-button>
          <el-button type="warning" :disabled="false" icon="RefreshLeft" @click="reset">Reset</el-button>
+      </el-row>
+      <br />
+      <el-row>
+         <el-tag :type="statusType" size="large" effect="light">Simulator Status: {{state}}</el-tag>
       </el-row>
       <br />
       <vstates :update="updateStates"/>
