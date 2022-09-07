@@ -6,6 +6,7 @@ const vStates = {
    props: ['update'],
    data() {
       return {
+         activeCollapse: [],
          regs: [
             { 'RAX': 0x0 },
             { 'RCX': 0x0 },
@@ -59,24 +60,28 @@ const vStates = {
       }
    },
    template: `
-      <el-divider>Y86-64 Registers</el-divider>
-         <el-descriptions :column="4" direction="vertical" border>
-            <el-descriptions-item v-for="reg in regs" :label="Object.keys(reg)[0]">
-               {{ '0x' + Object.values(reg)[0].toString(16) }}
-            </el-descriptions-item>
-         </el-descriptions>
-         <br />
-         <el-descriptions :column="6" border>
-            <el-descriptions-item label="ZF">{{(cc >> 2) & 0x1}}</el-descriptions-item>
-            <el-descriptions-item label="SF">{{(cc >> 1) & 0x1}}</el-descriptions-item>
-            <el-descriptions-item label="OF">{{cc & 0x1}}</el-descriptions-item>
-         </el-descriptions>
-      <el-divider>Y86-64 Data Memory Diff</el-divider>
-         <el-descriptions :column="2" border>
-            <el-descriptions-item v-for="mem in diffMem" :label="Object.keys(mem)[0]">
-               {{ Object.values(mem)[0] }}
-            </el-descriptions-item>
-         </el-descriptions>
+      <el-collapse v-model="activeCollapse">
+         <el-collapse-item title="Y86-64 Registers" name="1">
+            <el-descriptions :column="4" direction="vertical" border>
+               <el-descriptions-item v-for="reg in regs" :label="Object.keys(reg)[0]">
+                  {{ '0x' + Object.values(reg)[0].toString(16) }}
+               </el-descriptions-item>
+            </el-descriptions>
+            <br />
+            <el-descriptions :column="6" border>
+               <el-descriptions-item label="ZF">{{(cc >> 2) & 0x1}}</el-descriptions-item>
+               <el-descriptions-item label="SF">{{(cc >> 1) & 0x1}}</el-descriptions-item>
+               <el-descriptions-item label="OF">{{cc & 0x1}}</el-descriptions-item>
+            </el-descriptions>
+         </el-collapse-item>
+         <el-collapse-item title="Y86-64 Data Memory Diff" name="2">
+            <el-descriptions :column="2" border>
+               <el-descriptions-item v-for="mem in diffMem" :label="Object.keys(mem)[0]">
+                  {{ Object.values(mem)[0] }}
+               </el-descriptions-item>
+            </el-descriptions>
+         </el-collapse-item>
+      </el-collapse>
    `
 }
 
