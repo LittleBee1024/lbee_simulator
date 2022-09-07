@@ -79,4 +79,8 @@ namespace SIM
       return (m_sim->m_mem).size();
    }
 
+   int SimViewer::getCC() const
+   {
+      return m_sim->m_cc;
+   }
 }

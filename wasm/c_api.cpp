@@ -107,3 +107,9 @@ uint64_t *sim_get_diff_mem_data()
 {
    return GLOBAL::g_diffMemoryQWords.data();
 }
+
+int sim_get_cc()
+{
+   const SIM::SimViewer v(GLOBAL::SimSingleton::getInstance());
+   return v.getCC();
+}

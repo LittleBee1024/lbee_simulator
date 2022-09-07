@@ -24,6 +24,8 @@ namespace SIM
       uint64_t gemMemory(int addr) const;
       size_t getMemorySize() const;
 
+      int getCC() const;
+
    private:
       const Yis *m_sim;
    };

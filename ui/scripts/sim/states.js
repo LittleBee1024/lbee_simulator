@@ -23,7 +23,8 @@ const vStates = {
             { 'R13': 0x0 },
             { 'R14': 0x0 },
          ],
-         diffMem : []
+         diffMem : [],
+         cc : 4
       }
    },
    methods: {
@@ -38,9 +39,9 @@ const vStates = {
       updateDataMemory() {
          this.diffMem.length = 0
 
-         const counts = Module._Sim_Get_Diff_Mem_Counts();
-         const memAddr32Base = Module._Sim_Get_Diff_Mem_Addr();
-         const memData64Base = Module._Sim_Get_Diff_Mem_Data();
+         const counts = Module._Sim_Get_Diff_Mem_Counts()
+         const memAddr32Base = Module._Sim_Get_Diff_Mem_Addr()
+         const memData64Base = Module._Sim_Get_Diff_Mem_Data()
          for (let i = 0; i < counts; i++) {
             const memAddr32Addr = memAddr32Base + i * Int32Array.BYTES_PER_ELEMENT
             const memData64Addr = memData64Base + i * BigInt64Array.BYTES_PER_ELEMENT
@@ -52,6 +53,7 @@ const vStates = {
    },
    watch: {
       update: function () {
+         this.cc = Module._Sim_Get_CC()
          this.updateRegisters()
          this.updateDataMemory()
       }
@@ -62,6 +64,12 @@ const vStates = {
             <el-descriptions-item v-for="reg in regs" :label="Object.keys(reg)[0]">
                {{ '0x' + Object.values(reg)[0].toString(16) }}
             </el-descriptions-item>
+         </el-descriptions>
+         <br />
+         <el-descriptions :column="6" border>
+            <el-descriptions-item label="ZF">{{(cc >> 2) & 0x1}}</el-descriptions-item>
+            <el-descriptions-item label="SF">{{(cc >> 1) & 0x1}}</el-descriptions-item>
+            <el-descriptions-item label="OF">{{cc & 0x1}}</el-descriptions-item>
          </el-descriptions>
       <el-divider>Y86-64 Data Memory Diff</el-divider>
          <el-descriptions :column="2" border>

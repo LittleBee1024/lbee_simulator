@@ -69,3 +69,7 @@ EM_PORT_API(uint64_t*) Sim_Get_Diff_Mem_Data() {
    return sim_get_diff_mem_data();
 }
 
+EM_PORT_API(int) Sim_Get_CC() {
+   return sim_get_cc();
+}
+
