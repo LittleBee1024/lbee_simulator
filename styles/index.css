@@ -4,12 +4,14 @@ body {
 }
 
 .el-header {
+   background-color: #ffa724;
    margin: 0em;
    padding: 0em;
    display: flex;
-   align-items: center;
+   align-items: flex-end;
    justify-content: flex-start;
    flex-wrap: wrap;
+   min-height: 10vh;
 }
 
 .el-footer {
@@ -17,11 +19,12 @@ body {
    display: flex;
    align-items: center;
    justify-content: flex-end;
+   min-height: 10vh;
 }
 
 .el-menu {
    background-color: #ffa724;
-   flex: 1;
+   flex: auto;
 }
 
 .el-main {
