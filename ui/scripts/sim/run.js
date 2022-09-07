@@ -29,9 +29,9 @@ const vRun = {
          this.state = UTF8ToString(Module._Sim_Step_Run())
          this.update()
          if (this.state == "HALT")
-            this.stop()
+            this.pause()
       },
-      stop() {
+      pause() {
          if (this.isRunning)
          {
             this.isRunning = false
@@ -39,7 +39,7 @@ const vRun = {
          }
       },
       reset() {
-         this.stop()
+         this.pause()
          Module._Sim_Reset_Recover()
          this.activeAddr = -1
          this.state = "OK"
@@ -67,7 +67,7 @@ const vRun = {
       <br />
       <el-row>
          <el-button type="primary" :disabled="isRunning" icon="ArrowRight" @click="step">Step</el-button>
-         <el-button type="warning" :disabled="!isRunning" icon="VideoPause" @click="stop">Stop</el-button>
+         <el-button type="warning" :disabled="!isRunning" icon="VideoPause" @click="pause">Pause</el-button>
          <el-button type="warning" :disabled="false" icon="RefreshLeft" @click="reset">Reset</el-button>
       </el-row>
       <br />
