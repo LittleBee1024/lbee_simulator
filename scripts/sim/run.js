@@ -59,6 +59,7 @@ const vRun = {
          <el-button type="warning" :disabled="!isRunning" icon="VideoPause" @click="stop">Stop</el-button>
          <el-button type="warning" :disabled="false" icon="RefreshLeft" @click="reset">Reset</el-button>
       </el-row>
+      <br />
       <vstates :update="updateStates"/>
    `
 }

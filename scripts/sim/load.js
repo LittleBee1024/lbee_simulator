@@ -39,7 +39,7 @@ const vLoad = {
    },
    template: `
       <el-button type="primary" icon="Upload" @click="load">Load</el-button>
-      <el-divider>Y86-64 Code Memory</el-divider>
+      <el-divider>Y86-64 Simulator</el-divider>
       <el-table
          border
          :data="loadCodes"
