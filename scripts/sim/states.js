@@ -22,7 +22,8 @@ const vStates = {
             { 'R12': 0x0 },
             { 'R13': 0x0 },
             { 'R14': 0x0 },
-         ]
+         ],
+         diffMem : []
       }
    },
    methods: {
@@ -35,7 +36,18 @@ const vStates = {
          }
       },
       updateDataMemory() {
-         console.log("updateDataMemory")
+         this.diffMem.length = 0
+
+         const counts = Module._Sim_Get_Diff_Mem_Counts();
+         const memAddr32Base = Module._Sim_Get_Diff_Mem_Addr();
+         const memData64Base = Module._Sim_Get_Diff_Mem_Data();
+         for (let i = 0; i < counts; i++) {
+            const memAddr32Addr = memAddr32Base + i * Int32Array.BYTES_PER_ELEMENT
+            const memData64Addr = memData64Base + i * BigInt64Array.BYTES_PER_ELEMENT
+            const memAddr = Module.HEAP32[memAddr32Addr >> 2]
+            const memData = toUInt64(Module.HEAPU32[memData64Addr >> 2], Module.HEAPU32[(memData64Addr + 4) >> 2])
+            this.diffMem.push({[memAddr.toString(16).toLocaleUpperCase().padStart(3, '0')]: (memData.toString(16).padStart(16, '0'))})
+         }
       },
    },
    watch: {
@@ -52,6 +64,11 @@ const vStates = {
             </el-descriptions-item>
          </el-descriptions>
       <el-divider>Y86-64 Data Memory Diff</el-divider>
+         <el-descriptions :column="2" border>
+            <el-descriptions-item v-for="mem in diffMem" :label="Object.keys(mem)[0]">
+               {{ Object.values(mem)[0] }}
+            </el-descriptions-item>
+         </el-descriptions>
    `
 }
 
