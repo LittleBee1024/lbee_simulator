@@ -60,6 +60,10 @@ body {
    --el-table-tr-bg-color: rgb(239, 235, 235);
 }
 
+.el-row {
+   flex-wrap: nowrap;
+}
+
 #run .el-row {
    display: flex;
    justify-content: flex-start;
