@@ -67,7 +67,7 @@ body {
 
 .demonstration {
    color: var(--el-text-color-secondary);
-   padding: 8px;
+   padding: 10px;
 }
 
 .el-slider {
