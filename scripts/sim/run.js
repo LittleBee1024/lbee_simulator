@@ -61,7 +61,7 @@ const vRun = {
    template: `
       <el-row id="run">
          <el-button type="primary" :disabled="isRunning" icon="VideoPlay" @click="run">Run</el-button>
-         <el-slider v-model="speed" />
+         <el-slider v-model="speed" :disabled="isRunning" />
          <span class="demonstration">Speed</span>
       </el-row>
       <br />
