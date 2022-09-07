@@ -62,9 +62,9 @@ const vStates = {
    template: `
       <el-collapse v-model="activeCollapse">
          <el-collapse-item title="Y86-64 Registers" name="1">
-            <el-descriptions :column="4" direction="vertical" border>
+            <el-descriptions :column="2" border>
                <el-descriptions-item v-for="reg in regs" :label="Object.keys(reg)[0]">
-                  {{ '0x' + Object.values(reg)[0].toString(16) }}
+                  {{ Object.values(reg)[0].toString(16).padStart(16, '0') }}
                </el-descriptions-item>
             </el-descriptions>
             <br />
