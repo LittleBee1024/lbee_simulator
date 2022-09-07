@@ -50,4 +50,5 @@ extern "C"
    int sim_get_diff_mem_counts();
    int *sim_get_diff_mem_addr();
    uint64_t *sim_get_diff_mem_data();
+   int sim_get_cc();
 }

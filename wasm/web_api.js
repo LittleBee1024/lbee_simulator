@@ -4906,6 +4906,9 @@ var _Sim_Get_Diff_Mem_Addr = Module["_Sim_Get_Diff_Mem_Addr"] = createExportWrap
 var _Sim_Get_Diff_Mem_Data = Module["_Sim_Get_Diff_Mem_Data"] = createExportWrapper("Sim_Get_Diff_Mem_Data");
 
 /** @type {function(...*):?} */
+var _Sim_Get_CC = Module["_Sim_Get_CC"] = createExportWrapper("Sim_Get_CC");
+
+/** @type {function(...*):?} */
 var _malloc = Module["_malloc"] = createExportWrapper("malloc");
 
 /** @type {function(...*):?} */
