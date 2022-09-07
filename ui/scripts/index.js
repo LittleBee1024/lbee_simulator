@@ -4,11 +4,20 @@ import vSim from './sim/index.js'
 const vAside = {
    props: ['routes'],
    emits: ['click'],
+   methods: {
+      help() {
+         window.open('https://littlebee1024.github.io/learning_book/booknotes/csapp/04/','_blank')
+      },
+   },
    template: `
-      <el-menu mode="horizontal">
+      <el-menu mode="horizontal" :ellipsis="false">
          <template v-for="(route, i) in routes">
             <el-menu-item :index="i.toString()" @click="$emit('click', route)">{{ route }}</el-menu-item>
          </template>
+         <div id="help-menu" />
+         <el-menu-item index="-1" @click="help">
+            <el-icon><QuestionFilled /></el-icon>Help
+         </el-menu-item>
       </el-menu>
    `
 }
