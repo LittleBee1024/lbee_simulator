@@ -18,7 +18,11 @@ namespace SIM
       const char *getCodeComment(int pos) const;
 
       int getCurPC() const;
-      int64_t getRegister(REG_ID id);
+      void updateGlobalRegisterCache() const;
+
+      int updateGlobalDiffMemCache() const;
+      uint64_t gemMemory(int addr) const;
+      size_t getMemorySize() const;
 
    private:
       const Yis *m_sim;

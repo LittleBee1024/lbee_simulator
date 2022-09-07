@@ -5,13 +5,15 @@
 
 namespace GLOBAL
 {
-   std::string binCode;
-   std::vector<int64_t> registers;
-   std::shared_ptr<IO::OutputInterface> simOut = std::make_shared<IO::StdOut>();
+   std::string g_binCode;
+   std::vector<uint64_t> g_registers(REG_NONE, 0);
+   std::vector<int> g_diffMemoryAddrs;
+   std::vector<uint64_t> g_diffMemoryQWords;
+   std::shared_ptr<IO::OutputInterface> g_simOut = std::make_shared<IO::StdOut>();
 
    SIM::Yis *SimSingleton::getInstance()
    {
-      static SIM::Yis yis(simOut);
+      static SIM::Yis yis(g_simOut);
       return &yis;
    }
 }

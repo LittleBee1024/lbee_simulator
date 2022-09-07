@@ -46,5 +46,8 @@ extern "C"
     * 
     */
    int sim_get_cur_pc();
-   int64_t *sim_get_registers();
+   uint64_t *sim_get_registers();
+   int sim_get_diff_mem_counts();
+   int *sim_get_diff_mem_addr();
+   uint64_t *sim_get_diff_mem_data();
 }
