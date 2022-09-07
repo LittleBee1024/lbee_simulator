@@ -4897,6 +4897,15 @@ var _Sim_Get_Cur_PC = Module["_Sim_Get_Cur_PC"] = createExportWrapper("Sim_Get_C
 var _Sim_Get_Registers = Module["_Sim_Get_Registers"] = createExportWrapper("Sim_Get_Registers");
 
 /** @type {function(...*):?} */
+var _Sim_Get_Diff_Mem_Counts = Module["_Sim_Get_Diff_Mem_Counts"] = createExportWrapper("Sim_Get_Diff_Mem_Counts");
+
+/** @type {function(...*):?} */
+var _Sim_Get_Diff_Mem_Addr = Module["_Sim_Get_Diff_Mem_Addr"] = createExportWrapper("Sim_Get_Diff_Mem_Addr");
+
+/** @type {function(...*):?} */
+var _Sim_Get_Diff_Mem_Data = Module["_Sim_Get_Diff_Mem_Data"] = createExportWrapper("Sim_Get_Diff_Mem_Data");
+
+/** @type {function(...*):?} */
 var _malloc = Module["_malloc"] = createExportWrapper("malloc");
 
 /** @type {function(...*):?} */

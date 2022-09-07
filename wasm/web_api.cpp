@@ -53,7 +53,19 @@ EM_PORT_API(int) Sim_Get_Cur_PC() {
    return sim_get_cur_pc();
 }
 
-EM_PORT_API(int64_t*) Sim_Get_Registers() {
+EM_PORT_API(uint64_t*) Sim_Get_Registers() {
    return sim_get_registers();
+}
+
+EM_PORT_API(int) Sim_Get_Diff_Mem_Counts() {
+   return sim_get_diff_mem_counts();
+}
+
+EM_PORT_API(int*) Sim_Get_Diff_Mem_Addr() {
+   return sim_get_diff_mem_addr();
+}
+
+EM_PORT_API(uint64_t*) Sim_Get_Diff_Mem_Data() {
+   return sim_get_diff_mem_data();
 }
 

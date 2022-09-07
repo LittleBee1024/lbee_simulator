@@ -13,7 +13,7 @@
 
 const char *sim_assemble(const char *buf)
 {
-   GLOBAL::binCode.clear();
+   GLOBAL::g_binCode.clear();
    if (std::string(buf).empty())
       return "";
 
@@ -21,17 +21,17 @@ const char *sim_assemble(const char *buf)
    std::shared_ptr<IO::OutputInterface> out = std::make_shared<IO::MemOut>();
    YAS::Lexer(std::move(in)).parse(out);
 
-   GLOBAL::binCode = dynamic_cast<IO::MemOut *>(out.get())->dump();
-   return GLOBAL::binCode.c_str();
+   GLOBAL::g_binCode = dynamic_cast<IO::MemOut *>(out.get())->dump();
+   return GLOBAL::g_binCode.c_str();
 }
 
 void sim_load_code_save()
 {
-   std::shared_ptr<IO::InputInterface> in = std::make_shared<IO::MemIn>(GLOBAL::binCode.c_str());
+   std::shared_ptr<IO::InputInterface> in = std::make_shared<IO::MemIn>(GLOBAL::g_binCode.c_str());
    auto yis = GLOBAL::SimSingleton::getInstance();
    if (yis->loadCode(in) == 0)
    {
-      GLOBAL::simOut->out("[WARN] No code was loaded\n");
+      GLOBAL::g_simOut->out("[WARN] No code was loaded\n");
       return;
    }
    yis->save();
@@ -50,47 +50,60 @@ const char *sim_step_run()
    auto yis = GLOBAL::SimSingleton::getInstance();
 
    SIM::State state = yis->runOneCycle();
-   GLOBAL::simOut->out("[INFO] The cycle is done with State=%s\n", SIM::getStateName(state));
+   GLOBAL::g_simOut->out("[INFO] The cycle is done with State=%s\n", SIM::getStateName(state));
 
    return SIM::getStateName(state);
 }
 
 int sim_get_code_len()
 {
-   SIM::SimViewer v(GLOBAL::SimSingleton::getInstance());
+   const SIM::SimViewer v(GLOBAL::SimSingleton::getInstance());
    return v.getCodeLen();
 }
 
 int sim_get_code_addr(int pos)
 {
-   SIM::SimViewer v(GLOBAL::SimSingleton::getInstance());
+   const SIM::SimViewer v(GLOBAL::SimSingleton::getInstance());
    return v.getCodeAddr(pos);
 }
 
 const char *sim_get_code_instr(int pos)
 {
-   SIM::SimViewer v(GLOBAL::SimSingleton::getInstance());
+   const SIM::SimViewer v(GLOBAL::SimSingleton::getInstance());
    return v.getCodeInstr(pos);
 }
 
 const char *sim_get_code_comment(int pos)
 {
-   SIM::SimViewer v(GLOBAL::SimSingleton::getInstance());
+   const SIM::SimViewer v(GLOBAL::SimSingleton::getInstance());
    return v.getCodeComment(pos);
 }
 
 int sim_get_cur_pc()
 {
-   SIM::SimViewer v(GLOBAL::SimSingleton::getInstance());
+   const SIM::SimViewer v(GLOBAL::SimSingleton::getInstance());
    return v.getCurPC();
 }
 
-int64_t *sim_get_registers()
+uint64_t *sim_get_registers()
 {
-   SIM::SimViewer v(GLOBAL::SimSingleton::getInstance());
-   for (int id = REG_RAX; id < REG_NONE; id++)
-   {
-      GLOBAL::registers[id] = v.getRegister((REG_ID)id);
-   }
-   return GLOBAL::registers.data();
+   const SIM::SimViewer v(GLOBAL::SimSingleton::getInstance());
+   v.updateGlobalRegisterCache();
+   return GLOBAL::g_registers.data();
+}
+
+int sim_get_diff_mem_counts()
+{
+   const SIM::SimViewer v(GLOBAL::SimSingleton::getInstance());
+   return v.updateGlobalDiffMemCache();
+}
+
+int *sim_get_diff_mem_addr()
+{
+   return GLOBAL::g_diffMemoryAddrs.data();
+}
+
+uint64_t *sim_get_diff_mem_data()
+{
+   return GLOBAL::g_diffMemoryQWords.data();
 }
