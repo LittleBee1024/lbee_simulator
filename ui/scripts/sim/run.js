@@ -28,6 +28,8 @@ const vRun = {
          this.activeAddr = Module._Sim_Get_Cur_PC()
          this.state = UTF8ToString(Module._Sim_Step_Run())
          this.update()
+         if (this.state == "HALT")
+            this.stop()
       },
       stop() {
          if (this.isRunning)
